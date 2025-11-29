@@ -12,6 +12,7 @@ import Dock from "@components/dock.jsx"
 import Terminalwindow from "@windows/terminal.jsx";
 import Askwindow from "@windows/ask.jsx";
 import Resumewindow from "@windows/resume.jsx";
+import Calendarwindow from "@windows/calendar.jsx";
 
 
 class ErrorBoundary extends React.Component {
@@ -58,6 +59,7 @@ function App() {
         <Terminalwindow />
         <Askwindow></Askwindow>
         <Resumewindow></Resumewindow>
+        <Calendarwindow />
 
 
 

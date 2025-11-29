@@ -26,18 +26,24 @@ function windowWrapper(Component, windowKey) {
                 el.style.display = "block";
                 gsap.fromTo(
                     el,
-                    { scale: 0.9, opacity: 0, y: 24 },
-                    { scale: 1, opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }
+                    { scale: 0.95, opacity: 0, y: 10 },
+                    {
+                        scale: 1,
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.35,
+                        ease: "power2.out"
+                    }
                 );
             } else {
                 if (prevIsOpenRef.current) {
                     const toVars = minimised
-                        ? { scale: 0.92, opacity: 0, y: 30 }
-                        : { scale: 0.92, opacity: 0, y: -20 };
+                        ? { scale: 0.95, opacity: 0, y: 20 }
+                        : { scale: 0.95, opacity: 0, y: -10 };
                     gsap.to(el, {
                         ...toVars,
-                        duration: 0.3,
-                        ease: "power2.inOut",
+                        duration: 0.25,
+                        ease: "power2.in",
                         onComplete: () => {
                             el.style.display = "none";
                             gsap.set(el, { clearProps: "transform,opacity" });
@@ -59,8 +65,16 @@ function windowWrapper(Component, windowKey) {
 
                 const NAVBAR_HEIGHT = 30;
 
-                const x = (window.innerWidth - winWidth) / 2;
-                let y = NAVBAR_HEIGHT + 10;
+                let x, y;
+                if (windowKey === 'calendar') {
+                    // Position calendar at top-right corner
+                    x = window.innerWidth - winWidth - 20;
+                    y = NAVBAR_HEIGHT + 10;
+                } else {
+                    // Center other windows
+                    x = (window.innerWidth - winWidth) / 2;
+                    y = NAVBAR_HEIGHT + 10;
+                }
 
                 gsap.set(el, { left: x, top: y, x: 0, y: 0, position: 'absolute' });
 
@@ -92,7 +106,12 @@ function windowWrapper(Component, windowKey) {
                 ref={ref}
                 style={{ zIndex }}
                 className="absolute"
-                onMouseDown={() => focuswindow(windowKey)}
+                onMouseDown={(e) => {
+                    if (e.target.closest('#window-controls')) {
+                        return;
+                    }
+                    focuswindow(windowKey);
+                }}
             >
                 <Component {...props} />
             </section>
