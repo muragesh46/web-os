@@ -9,8 +9,9 @@ body,
     width: 100dvw;
     overflow: hidden;
     height: 100dvh;
+    background-color: black;
     background-image: url("/images/wallpaper.png");
-    background-size: cover;
+    background-size: 30%;
     background-repeat: no-repeat;
     background-position: center;
     margin: 0;
@@ -41,7 +42,7 @@ body,
     }
 
     nav {
-        @apply flex justify-between items-center bg-white/50 backdrop-blur-3xl select-none w-full fixed top-0 left-0 py-1 px-2.5 z-[100000] h-8;
+        @apply flex justify-between items-center bg-white backdrop-blur-3xl select-none w-full fixed top-0 left-0 py-1 px-2.5 z-[100000] h-8;
 
         div {
             @apply flex items-center max-sm:w-full max-sm:justify-center gap-3;
@@ -73,7 +74,7 @@ body,
     }
 
     #welcome {
-        @apply text-gray-200 flex flex-col justify-center items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none max-sm:h-screen max-sm:w-full max-sm:px-10;
+        @apply text-gray-200 flex flex-col justify-center items-center absolute top-12 left-1/2 -translate-x-1/2 select-none max-sm:h-screen max-sm:w-full max-sm:px-10 z-10;
 
         .small-screen {
             @apply sm:hidden m-7 bg-red-300/20 backdrop-blur-lg p-3 rounded-md absolute top-10;
@@ -220,7 +221,7 @@ body,
     }
 
     #photos {
-        @apply max-w-3xl bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+        @apply w-[50rem] h-[35rem] bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden flex flex-col;
 
         .sidebar {
             @apply w-3/12 flex-none bg-gray-50 border-r border-gray-200 flex flex-col p-5;
@@ -249,30 +250,16 @@ body,
         }
 
         .gallery {
-            @apply p-5;
+            @apply p-5 flex-1 overflow-y-auto;
 
             ul {
-                @apply grid grid-cols-5 grid-rows-5 gap-2.5;
+                @apply grid grid-cols-3 gap-4 pb-4;
 
                 li {
+                    @apply bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300;
+
                     img {
-                        @apply size-full object-cover rounded-lg;
-                    }
-
-                    &:first-child {
-                        @apply row-start-1 row-span-3 col-start-1 col-span-3;
-                    }
-
-                    &:nth-child(2) {
-                        @apply row-start-1 row-span-3 col-start-4 col-span-2;
-                    }
-
-                    &:nth-child(3) {
-                        @apply row-start-4 row-span-2 col-start-3 col-span-3;
-                    }
-
-                    &:last-child {
-                        @apply row-start-4 row-span-2 col-start-1 col-span-2;
+                        @apply w-full aspect-square object-cover;
                     }
                 }
             }
@@ -334,7 +321,15 @@ body,
     }
 
     #txtfile {
-        @apply w-md bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+        @apply w-fit max-w-4xl bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+
+        h2 {
+            @apply font-bold text-sm text-center w-full;
+        }
+    }
+
+    #about {
+        @apply w-fit max-w-4xl bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
 
         h2 {
             @apply font-bold text-sm text-center w-full;
@@ -342,7 +337,7 @@ body,
     }
 
     #imgfile {
-        @apply w-xl bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+        @apply w-fit max-w-4xl bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
 
         #window-header {
             p {
@@ -351,23 +346,23 @@ body,
         }
 
         .preview {
-            @apply p-2 bg-gray-200 max-h-[70vh];
+            @apply p-6 bg-gray-50 flex items-center justify-center min-h-[300px] max-h-[70vh];
 
             img {
-                @apply w-full h-fit object-contain object-center;
+                @apply max-w-full max-h-[65vh] h-auto w-auto object-contain rounded-lg shadow-md;
             }
         }
     }
 
     #home {
-        @apply relative z-0 max-sm:hidden;
+        @apply relative z-0 max-sm:hidden w-full h-full;
 
         ul {
             li {
                 @apply absolute z-0 select-none flex items-center flex-col;
 
                 img {
-                    @apply group-hover:bg-gray-950/10 p-1 rounded-md;
+                    @apply w-16 group-hover:bg-white/20 p-1 rounded-md;
                 }
 
                 p {

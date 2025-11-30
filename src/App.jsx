@@ -8,12 +8,18 @@ import './index.css'
 
 import Navbar from "@components/Navbar.jsx";
 import Welcome from "@components/welcome.jsx";
+import Home from "@components/Home.jsx";
 import Dock from "@components/dock.jsx"
 import Terminalwindow from "@windows/terminal.jsx";
 import Askwindow from "@windows/ask.jsx";
+import Aboutwindow from "@windows/About.jsx";
 import Resumewindow from "@windows/resume.jsx";
 import Calendarwindow from "@windows/calendar.jsx";
-
+import FinderWindow from "@windows/Finder.jsx";
+import Textwindow from "@windows/Text.jsx";
+import Imagewindow from "@windows/Image.jsx";
+import Contactwindow from "@windows/contact.jsx";
+import Photos from "@windows/photos.jsx";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -58,9 +64,15 @@ function App() {
 
         <Terminalwindow />
         <Askwindow></Askwindow>
+        <Aboutwindow />
         <Resumewindow></Resumewindow>
         <Calendarwindow />
-
+        <FinderWindow />
+        <Textwindow></Textwindow>
+        <Imagewindow></Imagewindow>
+        <Contactwindow></Contactwindow>
+        <Home></Home>
+        <Photos></Photos>
 
 
       </main>

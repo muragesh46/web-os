@@ -5,6 +5,11 @@ const navLinks = [
         type: "finder",
     },
     {
+        id: 2,
+        name: "About me",
+        type: "about",
+    },
+    {
         id: 3,
         name: "Contact",
         type: "contact",
@@ -38,7 +43,7 @@ const navIcons = [
 const dockApps = [
     {
         id: "finder",
-        name: "Portfolio",
+        name: "finder",
         icon: "finder.png",
         canOpen: true,
     },
@@ -70,7 +75,8 @@ const dockApps = [
         id: "trash",
         name: "Archive",
         icon: "trash.png",
-        canOpen: false,
+        canOpen: true,
+        window: "finder",
     },
 ];
 
@@ -123,14 +129,14 @@ const socials = [
         text: "Twitter/X",
         icon: "/icons/twitter.svg",
         bg: "#ff866b",
-        link: "https://x.com/muragesh46",
+        link: "https://x.com/4_6_muragesh",
     },
     {
         id: 4,
         text: "LinkedIn",
         icon: "/icons/linkedin.svg",
         bg: "#05b6f6",
-        link: "https://www.linkedin.com/in/muragesh46",
+        link: "https://www.linkedin.com/in/muragesh-mirje/",
     },
 ];
 
@@ -229,7 +235,7 @@ const WORK_LOCATION = {
                     kind: "file",
                     fileType: "img",
                     position: "top-52 right-80",
-                    imageUrl: "/images/project-1.png",
+                    imageUrl: "/images/project-1.jpg",
                 },
 
             ],
@@ -260,7 +266,7 @@ const WORK_LOCATION = {
                 },
                 {
                     id: 2,
-                    name: "webos.vercel.app",
+                    name: "muragesh-webos.vercel.app",
                     icon: "/images/Ask.png",
                     kind: "file",
                     fileType: "url",
@@ -286,7 +292,7 @@ const WORK_LOCATION = {
             icon: "/images/folder.png",
             kind: "folder",
             position: "top-10 left-80",
-            windowPosition: "top-[33vh] left-7",
+            windowPosition: "top-[15vh] left-7",
             children: [
                 {
                     id: 1,
@@ -318,7 +324,7 @@ const WORK_LOCATION = {
                     kind: "file",
                     fileType: "img",
                     position: "top-52 right-80",
-                    imageUrl: "/images/project-3.png",
+                    imageUrl: "/images/project-3.jpg",
                 },
             ],
         },
@@ -343,7 +349,7 @@ const ABOUT_LOCATION = {
         },
         {
             id: 2,
-            name: "casual-me.png",
+            name: "me-infront-shiva.png",
             icon: "/images/image.png",
             kind: "file",
             fileType: "img",
@@ -352,12 +358,12 @@ const ABOUT_LOCATION = {
         },
         {
             id: 3,
-            name: "conference-me.png",
+            name: "me-me.png",
             icon: "/images/image.png",
             kind: "file",
             fileType: "img",
             position: "top-52 left-80",
-            imageUrl: "/images/muragesh-3.jpeg",
+            imageUrl: "/images/muragesh-3.jpg",
         },
         {
             id: 4,
@@ -369,10 +375,10 @@ const ABOUT_LOCATION = {
             subtitle: "Meet the Developer Behind the Code",
             image: "/images/muragesh.jpg",
             description: [
-                "Hey! I'm Muragesh 👋, a web developer who enjoys building sleek, interactive websites that actually work well.",
-                "I specialize in JavaScript, React, and Node.js—and I love making things feel smooth, fast, and just a little bit delightful.",
+                "Hey! I'm Muragesh 👋, a developer who enjoys building sleek, interactive websites that actually work well.",
+                "I worked in JavaScript, React, and Node.js—and I love making things feel smooth, fast, and just a little bit delightful.",
                 "I’m big on clean UI, good UX, and writing code that doesn’t need a search party to debug.",
-                "Outside of dev work, you'll find me tweaking layouts at 2AM, sipping overpriced coffee, or impulse-buying gadgets I absolutely convinced myself I needed 😅",
+                "Outside of dev work, you'll find me playing chess or impulse-buying products I absolutely convinced myself I needed 😅",
             ],
         },
     ],
@@ -405,7 +411,7 @@ const TRASH_LOCATION = {
     children: [
         {
             id: 1,
-            name: "trash1.png",
+            name: "windows.png",
             icon: "/images/image.png",
             kind: "file",
             fileType: "img",
@@ -414,7 +420,7 @@ const TRASH_LOCATION = {
         },
         {
             id: 2,
-            name: "trash2.png",
+            name: "android.png",
             icon: "/images/image.png",
             kind: "file",
             fileType: "img",
@@ -435,6 +441,7 @@ const INITIAL_Z_INDEX = 1000;
 
 const WINDOW_CONFIG = {
     finder: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+    about: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     contact: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     resume: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     Ask: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },

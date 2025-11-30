@@ -54,32 +54,42 @@ let renderText = (text, className, baseWeight = 400) => {
 
 function Welcome() {
     let titleRef = useRef(null);
-    let subtitleRef = useRef(null);
+    let subtitleRef1 = useRef(null);
+    let nameRef = useRef(null);
+    let subtitleRef2 = useRef(null);
 
     useGSAP(() => {
         let titlecleanup = setupTextHower(titleRef.current, "title");
-        let subtitlecleanup = setupTextHower(subtitleRef.current, "subtitle");
+        let subtitle1cleanup = setupTextHower(subtitleRef1.current, "subtitle");
+        let namecleanup = setupTextHower(nameRef.current, "title");
+        let subtitle2cleanup = setupTextHower(subtitleRef2.current, "subtitle");
         return () => {
             titlecleanup();
-            subtitlecleanup();
+            subtitle1cleanup();
+            namecleanup();
+            subtitle2cleanup();
 
         }
     }, []);
     return (
         <section id="welcome">
             <div>
-                <p ref={subtitleRef}>
-                    {renderText(
-                        "hey, Its Muragesh! Welcome to my Web-OS",
-                        "text-3xl font-georama",
-                        100
-                    )}
+                <p className="flex justify-center">
+                    <span ref={subtitleRef1} className="flex">
+                        {renderText("Hey, Its  ", "text-xl font-georama", 100)}
+                    </span>
+                    <span ref={nameRef} className="flex">
+                        {renderText("Muragesh ", "text-xl font-georama", 400)}
+                    </span>
+                    <span ref={subtitleRef2} className="flex">
+                        {renderText("! Welcome to my Web-OS", "text-xl font-georama", 100)}
+                    </span>
                 </p>
                 <br>
                 </br>
             </div>
 
-            <h1 ref={titleRef}>{renderText("Web-OS", "text-9xl italic font-georama")}</h1>
+            <h1 ref={titleRef}>{renderText("Web-OS", "text-7xl italic font-georama")}</h1>
             <div className="small-screen">
                 <p>this is designed for destop/ipad only</p>
             </div>

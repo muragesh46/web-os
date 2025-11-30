@@ -57,17 +57,22 @@ function Dock() {
   }, []);
   const toggleApp = (app) => {
     if (!app.canOpen) return;
-    const win = windowState?.[app.id];
-    if (!win) {
+    const windowKey = app.window || app.id;
+    const win = windowState?.[windowKey];
 
-      console.warn("No window found for app id:", app.id, { app });
-      openwindow(app.id);
+    if (!win) {
+      openwindow(windowKey, { id: app.id });
       return;
     }
+
     if (win.isOpen) {
-      closewindow(app.id);
+      if (win.data?.id !== app.id) {
+        openwindow(windowKey, { id: app.id });
+      } else {
+        closewindow(windowKey);
+      }
     } else {
-      openwindow(app.id);
+      openwindow(windowKey, { id: app.id });
     }
   };
 
@@ -85,7 +90,7 @@ function Dock() {
   return (
     <section id="dock">
       <div ref={dockref} className="dock-container">
-        {dockApps.map(({ id, name, icon, canOpen }) => (
+        {dockApps.map(({ id, name, icon, canOpen, window }) => (
           <div key={id ?? name} className="relative flex justify-center">
             <button
               type="button"
@@ -95,7 +100,7 @@ function Dock() {
               data-tooltip-content={name}
               data-tooltip-delayed-show={150}
               disabled={!canOpen}
-              onClick={() => toggleApp({ id, canOpen })}
+              onClick={() => toggleApp({ id, canOpen, window })}
             >
               <img
                 src={icon ? `/images/${icon}` : "/icons/app.svg"}

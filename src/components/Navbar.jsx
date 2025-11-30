@@ -59,7 +59,7 @@ function Navbar() {
     return (
         <nav className="nav">
             <div>
-                <img src="/images/logo.svg" alt="logo" className="h-[17.6px] w-auto" />
+                <img src="/images/m.png" alt="logo" className="h-[17.6px] w-auto" />
                 <p>{activeUser}</p>
                 <ul>
                     {navLinks.map(({ id, name, type }) => (
