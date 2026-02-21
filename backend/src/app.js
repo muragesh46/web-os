@@ -10,6 +10,10 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
+// Initialize WebSockets
+const { connectToSocket } = require('./apps/videocall/controllers/socketmanager');
+connectToSocket(server);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -24,9 +28,10 @@ app.use('/api/auth', require('./apps/auth/routes'));
 // app.use('/api/chat', require('./apps/chat/routes'));
 // app.use('/api/maps', require('./apps/maps/routes'));
 // app.use('/api/music', require('./apps/music/routes'));
-// app.use('/api/videocall', require('./apps/videocall/routes'));
+app.use('/api/videocall', require('./apps/videocall/routes/routes'));
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-    console.log(`🚀 Backend running on http://localhost:${PORT}`);
+    console.log(`🚀 Backend running on port ${PORT}`);
 });
+
