@@ -1,0 +1,45 @@
+@reference "../index.css";
+
+.auth-overlay {
+    @apply w-full h-dvh overflow-hidden bg-black/40 backdrop-blur-2xl absolute inset-0 z-[999999] flex flex-col items-center justify-center text-white select-none;
+}
+
+.auth-avatar-circle {
+    @apply size-32 rounded-full border border-white/20 bg-white/10 shadow-2xl backdrop-blur-lg flex items-center justify-center mb-8 shrink-0;
+}
+
+.auth-title {
+    @apply text-3xl font-bold font-georama mb-8;
+}
+
+.auth-form {
+    @apply flex flex-col w-80 space-y-4;
+}
+
+.auth-input-container {
+    @apply relative;
+}
+
+.auth-input-icon {
+    @apply absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400;
+}
+
+.auth-input {
+    @apply w-full bg-white/10 border border-white/20 rounded-full py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-gray-300 transition-all font-roboto;
+}
+
+.auth-error-text {
+    @apply text-red-400 text-sm text-center font-roboto;
+}
+
+.auth-submit-btn {
+    @apply w-full bg-white/20 hover:bg-white/30 border border-white/30 rounded-full py-2.5 font-bold transition-all disabled:opacity-50 flex justify-center items-center gap-2 mt-2;
+}
+
+.auth-spinner {
+    @apply size-5 border-2 border-white/30 border-t-white rounded-full animate-spin;
+}
+
+.auth-toggle-btn {
+    @apply mt-6 text-sm text-gray-300 hover:text-white transition-colors hover:underline font-roboto;
+}
