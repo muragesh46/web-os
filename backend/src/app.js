@@ -31,7 +31,7 @@ app.use('/api/auth', require('./apps/auth/routes'));
 app.use('/api/videocall', require('./apps/videocall/routes/routes'));
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Backend running on port ${PORT}`);
 });
 
