@@ -15,10 +15,12 @@ function Finder() {
         const isOpen = window?.finder?.isOpen;
         if (finderData?.id === "trash" && isOpen) {
             setActiveLocation(locations.trash);
+        } else if (finderData?.id && locations[finderData.id] && isOpen) {
+            setActiveLocation(locations[finderData.id]);
         }
     }, [window?.finder?.data, window?.finder?.isOpen, setActiveLocation]);
     const renderlist = (items) => items.map(item => (
-        <li className={clsx(item.id == activeLocation.id ? "active" : "notactive")} key={item.id} onClick={() => setActiveLocation(item)}>
+        <li className={clsx(item.id == activeLocation.id ? "active" : "not-active")} key={item.id} onClick={() => setActiveLocation(item)}>
             <img src={item.icon} className="w-4" alt={item.name} />
             <p className="text-sm font-medium truncate">{item.name}</p>
         </li>

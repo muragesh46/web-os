@@ -2,6 +2,13 @@
 
 Welcome! This isn't just a standard portfolio website—it's a fully interactive desktop experience running right in your browser. I built this to demonstrate what's possible with modern web technologies and to give you a fun way to explore my work.
 
+## Project Structure
+
+The project is structured into two main components:
+
+-   **`frontend/`**: The React/Vite-based interactive desktop environment.
+-   **`backend/`**: The Node.js/Express-based backend (supporting features like videocall).
+
 ## Features
 
 -   **Desktop Interface**: A clean, beautiful desktop environment that feels just like your computer, complete with a wallpaper and a dock.
@@ -26,38 +33,33 @@ I used some amazing tools to bring this project to life:
 
 ## Installation
 
-If you're curious about the code or want to run it locally, here is how you can do it:
+Follow these steps to set up and run the project locally:
 
-1.  **Clone the repository:**
+1.  **Clone the Repository:**
 
     ```bash
     git clone https://github.com/muragesh46/web-os.git
     cd web-os
     ```
 
-2.  **Install dependencies:**
-
-    ```bash
-    npm install
-    ```
-
-3.  **Set up Environment Variables:**
-    Create a `.env` file in the root directory and add your Gemini API key:
-
+2.  **Environment Setup:**
+    Create a `.env` file in the root directory (refer to `.env.example`):
     ```env
     VITE_GEMINI_API_KEY=your_api_key_here
     ```
 
-4.  **Run the development server:**
-
+3.  **Frontend Setup:**
     ```bash
+    cd frontend
+    npm install
     npm run dev
     ```
 
-5.  **Build for production:**
-
+4.  **Backend Setup (Optional):**
     ```bash
-    npm run build
+    cd backend
+    npm install
+    npm run dev
     ```
 
 ## Contributing

@@ -27,7 +27,7 @@ const Home = () => {
     });
 
     return (
-        <section id="home">
+        <section id="home" className="w-full h-full relative">
             <ul>
                 {projects.map((project) => (
                     <li

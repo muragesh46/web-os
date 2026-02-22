@@ -71,12 +71,69 @@ const dockApps = [
         icon: "terminal.png",
         canOpen: true,
     },
+
     {
         id: "trash",
         name: "Archive",
         icon: "trash.png",
         canOpen: true,
         window: "finder",
+    },
+];
+export const launchpadApps = [
+    {
+        id: "finder",
+        name: "Finder",
+        icon: "finder.png",
+        windowKey: "finder"
+    },
+    {
+        id: "Ask",
+        name: "Ask",
+        icon: "Ask.png",
+        windowKey: "Ask"
+    },
+    {
+        id: "photos",
+        name: "Gallery",
+        icon: "photos.png",
+        windowKey: "photos"
+    },
+    {
+        id: "contact",
+        name: "Contact",
+        icon: "contact.png",
+        windowKey: "contact"
+    },
+    {
+        id: "terminal",
+        name: "Skills",
+        icon: "terminal.png",
+        windowKey: "terminal"
+    },
+    {
+        id: "calendar",
+        name: "Calander",
+        icon: "calander.png",
+        windowKey: "calander"
+    },
+    {
+        id: "chat",
+        name: "Chat",
+        icon: "chat.png",
+        windowKey: "chat"
+    },
+    {
+        id: "music",
+        name: "Music",
+        icon: "music.png",
+        windowKey: "music"
+    },
+    {
+        id: "maps",
+        name: "Maps",
+        icon: "maps.png",
+        windowKey: "maps"
     },
 ];
 
@@ -449,7 +506,10 @@ const WINDOW_CONFIG = {
     terminal: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     txtfile: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     imgfile: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-    calendar: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+    calander: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+    videocall: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+    chat: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+    launchpad: { isOpen: false, zIndex: INITIAL_Z_INDEX + 100, data: null },
 };
 
 export { INITIAL_Z_INDEX, WINDOW_CONFIG };

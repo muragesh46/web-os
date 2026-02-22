@@ -6,8 +6,9 @@ import gsap from "gsap";
 import usewindowstore from "@store/window.js";
 
 function Dock() {
-  const { openwindow, closewindow, window: windowState } = usewindowstore()
+  const { openwindow, closewindow, window: windowState } = usewindowstore();
   let dockref = useRef(null);
+
   useGSAP(() => {
     const dock = dockref.current;
     if (!dock) return;
@@ -34,7 +35,7 @@ function Dock() {
     const handleMouseMove = (e) => {
       let { left } = dock.getBoundingClientRect();
       animateIcons(e.clientX - left);
-    }
+    };
 
     const resetIcons = () => {
       icons.forEach((icon) =>
@@ -55,8 +56,10 @@ function Dock() {
       dock.removeEventListener("mouseleave", resetIcons);
     };
   }, []);
+
   const toggleApp = (app) => {
     if (!app.canOpen) return;
+    closewindow("launchpad");
     const windowKey = app.window || app.id;
     const win = windowState?.[windowKey];
 
@@ -76,46 +79,82 @@ function Dock() {
     }
   };
 
+  const toggleLaunchpad = () => {
+    const win = windowState?.launchpad;
+    if (win?.isOpen) {
+      closewindow("launchpad");
+    } else {
+      openwindow("launchpad");
+    }
+  };
 
   const dockApps = Array.isArray(rawDockApps)
-    ? rawDockApps.filter(item => item && typeof item === 'object' && item.id && item.name)
+    ? rawDockApps.filter(
+      (item) => item && typeof item === "object" && item.id && item.name
+    )
     : [];
 
-  console.log("Dock Apps Data:", { rawDockApps, dockApps });
+  // Render a dock icon button
+  const renderDockBtn = ({ id, name, icon, canOpen, window: win }) => (
+    <div key={id ?? name} className="relative flex justify-center">
+      <button
+        type="button"
+        className="dock-icon"
+        aria-label={name}
+        data-tooltip-id="dock-tooltip"
+        data-tooltip-content={name}
+        data-tooltip-delayed-show={150}
+        disabled={!canOpen}
+        onClick={() => toggleApp({ id, canOpen, window: win })}
+      >
+        <img
+          src={icon ? `/images/${icon}` : "/icons/app.svg"}
+          className={canOpen ? "" : "opacity-60"}
+          alt={name}
+          loading="lazy"
+        />
+      </button>
+    </div>
+  );
 
-  if (import.meta.env.DEV && (!rawDockApps || !Array.isArray(rawDockApps))) {
-    console.warn("dockApps is missing or not an array. Dock will render empty state.");
-  }
+  // Split dock: first item (Finder), then launcher, then the rest
+  const [firstApp, ...restApps] = dockApps;
 
   return (
     <section id="dock">
       <div ref={dockref} className="dock-container">
-        {dockApps.map(({ id, name, icon, canOpen, window }) => (
-          <div key={id ?? name} className="relative flex justify-center">
-            <button
-              type="button"
-              className="dock-icon"
-              aria-label={name}
-              data-tooltip-id="dock-tooltip"
-              data-tooltip-content={name}
-              data-tooltip-delayed-show={150}
-              disabled={!canOpen}
-              onClick={() => toggleApp({ id, canOpen, window })}
-            >
-              <img
-                src={icon ? `/images/${icon}` : "/icons/app.svg"}
-                className={canOpen ? "" : "opacity-60"}
-                alt={name}
-                loading="lazy"
-              />
-            </button>
-          </div>
-        ))}
+        {/* Finder (first) */}
+        {firstApp && renderDockBtn(firstApp)}
+
+        {/* Launchpad launcher — after Finder, before Ask */}
+        <div className="relative flex justify-center">
+          <button
+            type="button"
+            className="dock-icon"
+            aria-label="Launchpad"
+            data-tooltip-id="dock-tooltip"
+            data-tooltip-content="Launchpad"
+            data-tooltip-delayed-show={150}
+            onClick={toggleLaunchpad}
+          >
+            <img
+              src="/images/launcher.png"
+              alt="Launchpad"
+              loading="lazy"
+            />
+          </button>
+        </div>
+
+        {/* Separator */}
+        <div className="w-px self-stretch bg-white/20 mx-1" />
+
+        {/* Rest of dock apps (Ask, Gallery, Contact, Skills, Archive…) */}
+        {restApps.map((app) => renderDockBtn(app))}
+
         <Tooltip id="dock-tooltip" place={"top"} className="tooltip" />
-
       </div>
-
     </section>
-  )
+  );
 }
+
 export default Dock;

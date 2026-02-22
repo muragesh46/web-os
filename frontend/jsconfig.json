@@ -6,8 +6,13 @@
       "@components/*": ["src/components/*"],
       "@constants/*": ["src/constants/*"],
       "@store/*": ["src/store/*"],
-      "@hco/*": ["src/hco/*"],
-      "@windows/*": ["src/windows/*"]
+      "@hoc/*": ["src/hoc/*"],
+      "@windows/*": ["src/features/windows/*"],
+      "@services/*": ["src/services/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@utils/*": ["src/utils/*"],
+      "@features/*": ["src/features/*"],
+      "@style/*": ["src/style/*"]
     }
   },
   "include": ["src"]

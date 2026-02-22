@@ -12,7 +12,7 @@ function Navbar() {
     const [showUserDropdown, setShowUserDropdown] = useState(false);
     const [showControlCenter, setShowControlCenter] = useState(false);
     const [currentTime, setCurrentTime] = useState(dayjs());
-    const activeUser = user?.displayName || "Guest";
+    const activeUser = user?.displayName || user?.fullName || user?.email || "Guest";
     const userRef = useRef(null);
     const controlRef = useRef(null);
 
@@ -107,11 +107,11 @@ function Navbar() {
                 <div className="relative">
                     <time
                         onClick={() => {
-                            const win = usewindowstore.getState().window?.calendar;
+                            const win = usewindowstore.getState().window?.calander;
                             if (win?.isOpen) {
-                                usewindowstore.getState().closewindow('calendar');
+                                usewindowstore.getState().closewindow('calander');
                             } else {
-                                openwindow('calendar');
+                                openwindow('calander');
                             }
                         }}
                         className="cursor-pointer hover:bg-gray-200/70 dark:hover:bg-white/10 rounded-lg px-2 py-0.5 transition-all duration-200 hover:shadow-sm font-medium"

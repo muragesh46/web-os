@@ -16,12 +16,17 @@ import TerminalWindow from "@windows/Terminal.jsx";
 import AskWindow from "@windows/Ask.jsx";
 import AboutWindow from "@windows/About.jsx";
 import ResumeWindow from "@windows/Resume.jsx";
-import CalendarWindow from "@windows/Calendar.jsx";
+import CalendarWindow from "@windows/calander.jsx";
 import FinderWindow from "@windows/Finder.jsx";
 import TextWindow from "@windows/Text.jsx";
 import ImageWindow from "@windows/Image.jsx";
 import ContactWindow from "@windows/Contact.jsx";
 import Photos from "@windows/Photos.jsx";
+import VideoCallWindow from "@windows/VideoCall.jsx";
+import Launchpad from "@windows/Launchpad.jsx";
+import ChatWindow from "@features/chat/Chat.jsx";
+import useSocketStore from "@store/socket";
+import IncomingCall from "@components/common/IncomingCall.jsx";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -58,6 +63,15 @@ class ErrorBoundary extends React.Component {
 
 function App() {
   const { user } = useAuthStore();
+  const { initSocket, disconnectSockets } = useSocketStore();
+
+  React.useEffect(() => {
+    if (user?.token) {
+      initSocket(user.token);
+    } else {
+      disconnectSockets();
+    }
+  }, [user?.token, initSocket, disconnectSockets]);
 
   return (
     <ErrorBoundary>
@@ -66,6 +80,7 @@ function App() {
         <Navbar></Navbar>
         <Welcome />
         <Dock></Dock>
+        <Launchpad />
 
         <TerminalWindow />
         <AskWindow></AskWindow>
@@ -78,8 +93,11 @@ function App() {
         <ContactWindow></ContactWindow>
         <Home></Home>
         <Photos></Photos>
+        <ChatWindow />
+        <VideoCallWindow />
 
-
+        {/* Global Notifications */}
+        <IncomingCall />
       </main>
     </ErrorBoundary>
   )

@@ -66,15 +66,9 @@ function WindowWrapper(Component, windowKey) {
                 const NAVBAR_HEIGHT = 30;
 
                 let x, y;
-                if (windowKey === 'calendar') {
-                    // Position calendar at top-right corner
-                    x = window.innerWidth - winWidth - 20;
-                    y = NAVBAR_HEIGHT + 10;
-                } else {
-                    // Center other windows
-                    x = (window.innerWidth - winWidth) / 2;
-                    y = NAVBAR_HEIGHT + 10;
-                }
+                // Center all windows
+                x = (window.innerWidth - winWidth) / 2;
+                y = NAVBAR_HEIGHT + 10;
 
                 gsap.set(el, { left: x, top: y, x: 0, y: 0, position: 'absolute' });
 

@@ -100,7 +100,9 @@ function Ask() {
                         <div className="ask-avatar ask-avatar-bot">
                             <Bot size={14} /></div>
                         <div className="ask-loading-dots">
-
+                            <span></span>
+                            <span></span>
+                            <span></span>
                         </div>
                     </div>
                 )}

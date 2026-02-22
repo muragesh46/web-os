@@ -11,8 +11,17 @@ const app = express();
 const server = http.createServer(app);
 
 // Initialize WebSockets
+const { Server } = require('socket.io');
+const io = new Server(server, { cors: { origin: '*' } });
+
+// Videocall socket (existing)
 const { connectToSocket } = require('./apps/videocall/controllers/socketmanager');
-connectToSocket(server);
+connectToSocket(io);
+
+// Chat socket (new — uses /chat namespace)
+const { initChatSocket } = require('./apps/chat/chat.socket');
+const chatIo = io.of('/chat');
+initChatSocket(chatIo);
 
 // Middleware
 app.use(cors());
@@ -25,7 +34,7 @@ app.get('/', (req, res) => {
 
 // Mount app routes
 app.use('/api/auth', require('./apps/auth/routes'));
-// app.use('/api/chat', require('./apps/chat/routes'));
+app.use('/api/chat', require('./apps/chat/routes'));
 // app.use('/api/maps', require('./apps/maps/routes'));
 // app.use('/api/music', require('./apps/music/routes'));
 app.use('/api/videocall', require('./apps/videocall/routes/routes'));
