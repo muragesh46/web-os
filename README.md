@@ -14,6 +14,9 @@ The project is structured into two main components:
 -   **Desktop Interface**: A clean, beautiful desktop environment that feels just like your computer, complete with a wallpaper and a dock.
 -   **Draggable Windows**: Interactive windows that you can drag, minimize, and close. Go ahead, move things around!
 -   **Dock**: A macOS-style dock for quick access to applications.
+-   **Chat App**: A full-featured chat application with real-time messaging, participant search, and contact management.
+-   **Multi-User Video Call**: High-quality video calls with a dynamic grid layout. Invite multiple participants into a single session for a group experience.
+-   **Global Notifications**: Incoming call alerts are integrated globally across the OS, so you never miss a connection.
 -   **Terminal**: For the power users, there's a functional terminal emulator to execute commands and navigate the virtual file system.
 -   **AI Assistant (Ask)**: An integrated AI chat interface powered by Google Gemini. Have a question? Just ask.
 -   **Resume Viewer**: A dedicated window to view my professional background and resume.
@@ -29,7 +32,10 @@ I used some amazing tools to bring this project to life:
 -   **Animations**: GSAP (GreenSock Animation Platform)
 -   **State Management**: Zustand
 -   **Icons**: Lucide React
+-   **Real-time Communication**: Socket.IO & WebRTC (Mesh Network)
 -   **AI Integration**: Google Generative AI SDK
+-   **Backend**: Node.js & Express
+-   **Database**: MongoDB (Mongoose)
 
 ## Installation
 

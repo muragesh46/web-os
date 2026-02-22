@@ -37,6 +37,7 @@ export default function VideoMeetComponent({ onLeave, meetingId, user }) {
 
                 // Join room once media is ready
                 if (socket && meetingId) {
+                    console.log(`📹 Joining room: ${meetingId} as ${user?.displayName || 'Guest'}`);
                     socket.emit('join-call', { path: meetingId, userName: user?.displayName || 'Guest' });
                 }
             } catch (err) {
@@ -77,6 +78,7 @@ export default function VideoMeetComponent({ onLeave, meetingId, user }) {
             };
 
             peer.ontrack = (e) => {
+                console.log(`🎞️ Received remote track from ${targetSocketId}`, e.track.kind);
                 setRemoteStreams(prev => {
                     const existingStream = prev[targetSocketId];
                     if (existingStream) {
@@ -97,6 +99,7 @@ export default function VideoMeetComponent({ onLeave, meetingId, user }) {
         };
 
         const handleUserJoined = async (newUserId, userName) => {
+            console.log(`👤 User joined: ${newUserId} (${userName})`);
             if (newUserId === socket.id) return;
 
             setParticipantNames(prev => ({ ...prev, [newUserId]: userName }));
@@ -137,6 +140,7 @@ export default function VideoMeetComponent({ onLeave, meetingId, user }) {
         };
 
         const handleUserLeft = (socketId) => {
+            console.log(`👋 User left: ${socketId}`);
             if (peersRef.current[socketId]) {
                 peersRef.current[socketId].close();
                 delete peersRef.current[socketId];
@@ -154,6 +158,7 @@ export default function VideoMeetComponent({ onLeave, meetingId, user }) {
         };
 
         const handleChatMessage = (text, sender, socketId) => {
+            console.log('📨 INCOMING CHAT:', text, sender, socketId);
             setMessages(prev => [...prev, { sender, text, socketId }]);
         };
 
@@ -195,6 +200,7 @@ export default function VideoMeetComponent({ onLeave, meetingId, user }) {
     const sendMessage = () => {
         if (!message.trim() || !socket) return;
         const senderName = user?.displayName || user?.fullName || user?.email || 'Anonymous';
+        console.log('📤 SENDING CHAT:', message, senderName);
         socket.emit('chat-message', message, senderName);
         setMessage('');
     };

@@ -8,6 +8,7 @@ const connectToSocket = (io) => {
 
     io.on("connection", (socket) => {
 
+        console.log("SOMETHING CONNECTED")
 
         socket.on("join-call", (data) => {
             let path;
@@ -75,6 +76,7 @@ const connectToSocket = (io) => {
                 }
 
                 messages[matchingRoom].push({ 'sender': sender, "data": data, "socket-id-sender": socket.id })
+                console.log("message", matchingRoom, ":", sender, data)
 
                 connections[matchingRoom].forEach((elem) => {
                     io.to(elem).emit("chat-message", data, sender, socket.id)
@@ -84,6 +86,7 @@ const connectToSocket = (io) => {
         })
 
         socket.on("disconnect", () => {
+            console.log(`👋 Socket disconnected: ${socket.id}`);
             delete timeOnline[socket.id];
 
             for (const path in connections) {
