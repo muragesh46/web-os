@@ -41,6 +41,10 @@ const Text = () => {
                                         <p key={idx}>{para}</p>
                                     ))}
                                 </div>
+                            ) : data?.content ? (
+                                <div className="space-y-3 leading-relaxed text-base text-gray-700">
+                                    <p>{data.content}</p>
+                                </div>
                             ) : null}
                         </div>
                     </div>
@@ -56,6 +60,10 @@ const Text = () => {
                                 {description.map((para, idx) => (
                                     <p key={idx}>{para}</p>
                                 ))}
+                            </div>
+                        ) : data?.content ? (
+                            <div className="space-y-3 leading-relaxed text-base text-gray-700">
+                                <p>{data.content}</p>
                             </div>
                         ) : null}
                     </div>

@@ -6,7 +6,7 @@ const Image = () => {
     const { window } = useWindowStore();
     const data = window?.imgfile?.data;
     const name = data?.name || "Image";
-    const imageUrl = data?.imageUrl;
+    const imageUrl = data?.content || data?.imageUrl;
 
     return (
         <div>

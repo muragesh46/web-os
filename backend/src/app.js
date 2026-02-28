@@ -35,6 +35,7 @@ app.get('/', (req, res) => {
 // Mount app routes
 app.use('/api/auth', require('./apps/auth/routes'));
 app.use('/api/chat', require('./apps/chat/routes'));
+app.use('/api/finder', require('./apps/finder/routes'));
 // app.use('/api/maps', require('./apps/maps/routes'));
 // app.use('/api/music', require('./apps/music/routes'));
 app.use('/api/videocall', require('./apps/videocall/routes/routes'));
