@@ -10,7 +10,7 @@ function Contact() {
                 <WindowControls target="contact" />
                 <h2>contact</h2>
             </div>
-            <h2>Muragesh’s Portfolio</h2>
+            <h2>Muragesh's Portfolio</h2>
             <div className="p-5 space-y-5">
                 <img
                     src="/images/muragesh.jpg"
@@ -20,8 +20,8 @@ function Contact() {
 
 
 
-                <h3>Let’s Connect</h3>
-                <p>Got an idea Or just want to chat tech? I’m all here just DM me!</p>
+                <h3>Let's Connect</h3>
+                <p>Got an idea Or just want to chat tech? I'm all here just DM me!</p>
 
                 <ul>
                     {socials.map(({ id, bg, link, icon, text }) => (

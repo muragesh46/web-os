@@ -12,19 +12,20 @@ import Home from "@components/layout/Home.jsx";
 import Dock from "@components/layout/Dock.jsx"
 import LockScreen from "@components/common/LockScreen.jsx";
 import useAuthStore from "@store/auth";
-import TerminalWindow from "@windows/Terminal.jsx";
-import AskWindow from "@windows/Ask.jsx";
-import AboutWindow from "@windows/About.jsx";
-import ResumeWindow from "@windows/Resume.jsx";
-import CalendarWindow from "@windows/calander.jsx";
-import FinderWindow from "@windows/Finder.jsx";
-import TextWindow from "@windows/Text.jsx";
-import ImageWindow from "@windows/Image.jsx";
-import ContactWindow from "@windows/Contact.jsx";
-import Photos from "@windows/Photos.jsx";
-import VideoCallWindow from "@windows/VideoCall.jsx";
-import Launchpad from "@windows/Launchpad.jsx";
+import TerminalWindow from "@features/terminal/Terminal.jsx";
+import AskWindow from "@features/ask/Ask.jsx";
+import AboutWindow from "@features/about/About.jsx";
+import ResumeWindow from "@features/resume/Resume.jsx";
+import CalendarWindow from "@features/calendar/Calendar.jsx";
+import FinderWindow from "@features/finder/Finder.jsx";
+import TextWindow from "@features/text/Text.jsx";
+import ImageWindow from "@features/image/Image.jsx";
+import ContactWindow from "@features/contact/Contact.jsx";
+import Photos from "@features/photos/Photos.jsx";
+import VideoCallWindow from "@features/videocall/VideoCall.jsx";
+import Launchpad from "@features/launchpad/Launchpad.jsx";
 import ChatWindow from "@features/chat/Chat.jsx";
+import CalculatorWindow from "@features/calculator/Calculator.jsx";
 import useSocketStore from "@store/socket";
 import IncomingCall from "@components/common/IncomingCall.jsx";
 
@@ -95,6 +96,7 @@ function App() {
         <Photos></Photos>
         <ChatWindow />
         <VideoCallWindow />
+        <CalculatorWindow />
 
         {/* Global Notifications */}
         <IncomingCall />

@@ -135,6 +135,12 @@ export const launchpadApps = [
         icon: "maps.png",
         windowKey: "maps"
     },
+    {
+        id: "calculator",
+        name: "Calculator",
+        icon: "calculator.png",
+        windowKey: "calculator"
+    },
 ];
 
 
@@ -509,6 +515,7 @@ const WINDOW_CONFIG = {
     calander: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     videocall: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     chat: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+    calculator: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     launchpad: { isOpen: false, zIndex: INITIAL_Z_INDEX + 100, data: null },
 };
 
