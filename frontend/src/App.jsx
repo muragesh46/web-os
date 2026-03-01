@@ -2,10 +2,7 @@ import React from 'react';
 import gsap from "gsap";
 import { Draggable } from "gsap/Draggable";
 gsap.registerPlugin(Draggable);
-
-
 import './index.css'
-
 import Navbar from "@components/layout/Navbar.jsx";
 import Welcome from "@components/common/Welcome.jsx";
 import Home from "@components/layout/Home.jsx";

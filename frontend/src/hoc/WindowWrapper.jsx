@@ -81,11 +81,14 @@ function WindowWrapper(Component, windowKey) {
                     edgeResistance: 0.65,
                     inertia: true,
                     trigger: headerEl || el,
-                    dragClickables: true,
-                    onPress: (e) => {
+                    dragClickables: false,
+                    allowEventDefault: true,
+                    onPress: function (e) {
                         focuswindow(windowKey);
-                        if (controlsEl && e?.target && e.target instanceof Element && e.target.closest('#window-controls')) {
-                            return;
+                        // If the press target is inside #window-controls, cancel drag
+                        if (e?.target instanceof Element && e.target.closest('#window-controls')) {
+                            this.endDrag(e);
+                            return false;
                         }
                     },
                 });
