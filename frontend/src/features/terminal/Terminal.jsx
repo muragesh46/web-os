@@ -7,7 +7,9 @@ function Terminal() {
     return (
         <>
             <div id="window-header">
-                <WindowControls target="terminal"></WindowControls>
+                <div id="window-controls">
+                    <WindowControls target="terminal"></WindowControls>
+                </div>
                 <h2>Tech Stack</h2>
             </div>
             <div className="techstack">

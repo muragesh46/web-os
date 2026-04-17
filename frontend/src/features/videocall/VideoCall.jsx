@@ -44,7 +44,9 @@ function VideoCall() {
         return (
             <div className="flex flex-col h-[600px] w-[900px] bg-white rounded-lg shadow-2xl border border-gray-300 relative overflow-hidden">
                 <div id="window-header" className="z-[1000000]">
-                    <WindowControls target="videocall" />
+                    <div id="window-controls">
+                        <WindowControls target="videocall" />
+                    </div>
                 </div>
                 <div className="flex-grow relative">
                     <LockScreen />
@@ -57,7 +59,9 @@ function VideoCall() {
         <div className="flex flex-col h-[600px] w-[900px] overflow-hidden bg-white rounded-lg shadow-2xl border border-gray-300 font-sans">
             {/* Window Header */}
             <div id="window-header" className="flex items-center px-3 py-2 border-b border-gray-200 bg-gray-50 shrink-0 relative">
-                <WindowControls target="videocall" />
+                <div id="window-controls">
+                    <WindowControls target="videocall" />
+                </div>
                 <h2 className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-700">Video Call</h2>
             </div>
 

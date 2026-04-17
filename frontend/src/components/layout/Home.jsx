@@ -5,12 +5,14 @@ import gsap from "gsap";
 import { Draggable } from "gsap/Draggable";
 import usewindowstore from "@store/window.js";
 import useFinderStore from "@store/finder.js";
+import useSettingsStore from "@store/settings.js";
 
 gsap.registerPlugin(Draggable);
 
 const Home = () => {
     const { openwindow } = usewindowstore();
     const { navigateTo } = useFinderStore();
+    const { wallpaper } = useSettingsStore();
     const [desktopItems, setDesktopItems] = useState([]);
 
     useEffect(() => {
@@ -54,7 +56,12 @@ const Home = () => {
     }, [desktopItems]);
 
     return (
-        <section id="home" className="w-full h-full relative">
+        <section id="home" className="w-full h-full relative" style={{
+            backgroundImage: `url(${wallpaper})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            transition: 'background-image 0.6s ease',
+        }}>
             <ul>
                 {desktopItems.map((project) => (
                     <li

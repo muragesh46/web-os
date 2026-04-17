@@ -200,7 +200,9 @@ function Chat() {
         return (
             <div className="flex flex-col h-[550px] w-[750px] bg-white rounded-lg overflow-hidden border border-gray-200 relative">
                 <div id="window-header" className="flex items-center px-3 py-2 border-b border-gray-200 bg-gray-50 z-[1000000]">
-                    <WindowControls target="chat" />
+                    <div id="window-controls">
+                        <WindowControls target="chat" />
+                    </div>
                     <h2 className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-700">Messages</h2>
                 </div>
                 <div className="flex-1 relative">
@@ -214,7 +216,9 @@ function Chat() {
         <div className="flex flex-col h-[550px] w-[750px] bg-white rounded-lg overflow-hidden border border-gray-200 font-sans shadow-xl">
             {/* Header */}
             <div id="window-header" className="flex items-center px-3 py-2 border-b border-gray-200 bg-gray-50 shrink-0 relative">
-                <WindowControls target="chat" />
+                <div id="window-controls">
+                    <WindowControls target="chat" />
+                </div>
                 <h2 className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-700">Messages</h2>
             </div>
 

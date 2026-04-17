@@ -20,7 +20,9 @@ function CalendarWindow() {
     return (
         <>
             <div id="window-header" className="flex items-center justify-between">
-                <WindowControls target="calander" />
+                <div id="window-controls">
+                    <WindowControls target="calander" />
+                </div>
                 <h2 className="flex-1 text-center">Calander</h2>
                 <div className="w-[52px]"></div>
             </div>

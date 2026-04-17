@@ -1,11 +1,18 @@
-import { LogOut, Users } from "lucide-react";
+import { LogOut, Users, Settings } from "lucide-react";
 import useAuthStore from "@store/auth";
+import usewindowstore from "@store/window.js";
 
 function UserDropdown({ onClose, activeUser }) {
     const { logout } = useAuthStore();
+    const { openwindow } = usewindowstore();
 
     const handleLogout = () => {
         logout();
+        onClose();
+    };
+
+    const handleSettings = () => {
+        openwindow("settings");
         onClose();
     };
 
@@ -16,6 +23,14 @@ function UserDropdown({ onClose, activeUser }) {
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">Signed in as</p>
                     <p className="font-bold text-gray-800 text-sm truncate">{activeUser}</p>
                 </div>
+
+                <button
+                    onClick={handleSettings}
+                    className="group flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm font-medium rounded-lg transition-all duration-200 hover:bg-gray-200/50 text-gray-700"
+                >
+                    <Settings size={16} className="text-gray-500 group-hover:text-gray-700" />
+                    <span>System Settings...</span>
+                </button>
 
                 <button
                     onClick={handleLogout}

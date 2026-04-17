@@ -16,7 +16,9 @@ const About = () => {
     return (
         <div>
             <div id="window-header">
-                <WindowControls target="about" />
+                <div id="window-controls">
+                    <WindowControls target="about" />
+                </div>
                 <h2>{name}</h2>
             </div>
 

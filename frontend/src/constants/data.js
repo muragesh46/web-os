@@ -79,6 +79,12 @@ const dockApps = [
         canOpen: true,
         window: "finder",
     },
+    {
+        id: "settings",
+        name: "Settings",
+        icon: "settings.png",
+        canOpen: true,
+    },
 ];
 export const launchpadApps = [
     {
@@ -140,6 +146,12 @@ export const launchpadApps = [
         name: "Calculator",
         icon: "calculator.png",
         windowKey: "calculator"
+    },
+    {
+        id: "settings",
+        name: "Settings",
+        icon: "settings.png",
+        windowKey: "settings"
     },
 ];
 
@@ -517,6 +529,7 @@ const WINDOW_CONFIG = {
     chat: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     calculator: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     launchpad: { isOpen: false, zIndex: INITIAL_Z_INDEX + 100, data: null },
+    settings: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
 };
 
 export { INITIAL_Z_INDEX, WINDOW_CONFIG };

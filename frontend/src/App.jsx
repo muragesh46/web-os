@@ -25,6 +25,10 @@ import ChatWindow from "@features/chat/Chat.jsx";
 import CalculatorWindow from "@features/calculator/Calculator.jsx";
 import useSocketStore from "@store/socket";
 import IncomingCall from "@components/common/IncomingCall.jsx";
+import SpotlightSearch from "@features/spotlight/Spotlight.jsx";
+import NotificationBanner from "@features/notifications/NotificationBanner.jsx";
+import SettingsWindow from "@features/settings/Settings.jsx";
+import useSettingsStore from "@store/settings";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -71,6 +75,16 @@ function App() {
     }
   }, [user?.token, initSocket, disconnectSockets]);
 
+  const { theme } = useSettingsStore();
+
+  React.useEffect(() => {
+    if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
   // Wake up Render backend on app load
   React.useEffect(() => {
     const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
@@ -103,6 +117,13 @@ function App() {
 
         {/* Global Notifications */}
         <IncomingCall />
+        <NotificationBanner />
+
+        {/* Global Overlays */}
+        <SpotlightSearch />
+
+        {/* App Windows */}
+        <SettingsWindow />
       </main>
     </ErrorBoundary>
   )

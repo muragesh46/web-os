@@ -72,7 +72,7 @@ function WindowWrapper(Component, windowKey) {
 
                 gsap.set(el, { left: x, top: y, x: 0, y: 0, position: 'absolute' });
 
-                const headerEl = el.querySelector('[id="window-header"]');
+                const headerEl = el.querySelector('[id="window-header"], [data-drag-handle="true"]');
                 const controlsEl = el.querySelector('[id="window-controls"]');
 
                 Draggable.create(el, {

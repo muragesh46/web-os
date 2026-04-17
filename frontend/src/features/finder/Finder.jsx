@@ -251,7 +251,9 @@ function Finder() {
     return (
         <>
             <div id="window-header" className="bg-gray-100/90 backdrop-blur rounded-t-lg">
-                <WindowControls target="finder" />
+                <div id="window-controls">
+                    <WindowControls target="finder" />
+                </div>
             </div>
 
             <div className="flex flex-col h-full bg-white relative" ref={finderRef} onContextMenu={handleContextMenu}>

@@ -122,7 +122,9 @@ function Calculator() {
     return (
         <div className="calc-container">
             <div id="window-header" className="calc-header">
-                <WindowControls target="calculator" />
+                <div id="window-controls">
+                    <WindowControls target="calculator" />
+                </div>
                 <span className="calc-title">Calculator</span>
                 <div style={{ width: 52 }} />
             </div>
