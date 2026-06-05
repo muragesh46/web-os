@@ -30,3 +30,7 @@ dist-ssr
 backend/node_modules.old/
 backend/coverage/
 backend/temp/
+.junie/
+.github/
+frontend/package-lock 2.json
+update_css.py
