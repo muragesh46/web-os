@@ -1,21 +1,22 @@
 # Multi-stage build for Web OS
 
 # Backend build stage
-FROM node:24-alpine AS backend-builder
+FROM node:24-bookworm-slim AS backend-builder
 WORKDIR /app/backend
 COPY backend/package*.json ./
 RUN npm ci --only=production
 
 # Frontend build stage
-FROM node:24-alpine AS frontend-builder
+FROM node:24-bookworm-slim AS frontend-builder
 WORKDIR /app/frontend
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 COPY frontend/package*.json ./
 RUN npm ci --legacy-peer-deps
 COPY frontend ./
 RUN npm run build
 
 # Production stage
-FROM node:24-alpine
+FROM node:24-bookworm-slim
 WORKDIR /app
 
 # Install backend dependencies
