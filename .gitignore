@@ -16,6 +16,7 @@ dist-ssr
 .env
 .env.*
 !.env.example
+!.env.validation.js
 
 # Editor directories and files
 .vscode/*
