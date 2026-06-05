@@ -1,11 +1,14 @@
 const User = require('./user.model');
-const Finder = require('../finder/finder.model'); // Import Finder model
+const Finder = require('../finder/finder.model');
 const jwt = require('jsonwebtoken');
+const { asyncHandler, AppError } = require('../../middleware/errorHandler');
+const { validate, authSchemas } = require('../../utils/validation');
+const logger = require('../../utils/logger');
 
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: '30d',
-    });
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRY || '7d',
+  });
 };
 
 // @desc    Register a new user

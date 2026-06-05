@@ -21,12 +21,15 @@ const usePhotosStore = create((set, get) => ({
 
     // Upload photo
     uploadPhoto: async (photoData) => {
+        set({ isError: false, message: '' });
         try {
             const newPhoto = await photosService.uploadPhoto(photoData);
             set((state) => ({ photos: [newPhoto, ...state.photos] }));
+            return newPhoto;
         } catch (error) {
             const msg = (error.response?.data?.message) || error.message;
-            alert(`Error: ${msg}`);
+            set({ isError: true, message: msg });
+            throw error;
         }
     },
 

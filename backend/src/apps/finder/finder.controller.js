@@ -5,7 +5,7 @@ const Finder = require('./finder.model');
 // @access  Private
 const getFiles = async (req, res) => {
     try {
-        const { parentId, isTrash, search } = req.query;
+        const { parentId, isTrash, search, type } = req.query;
 
         const query = { user: req.user._id };
 
@@ -13,6 +13,9 @@ const getFiles = async (req, res) => {
             query.isTrash = true;
         } else {
             query.isTrash = { $ne: true };
+            if (type) {
+                query.type = type;
+            }
             if (search) {
                 query.name = { $regex: search, $options: 'i' };
             } else if (parentId) {

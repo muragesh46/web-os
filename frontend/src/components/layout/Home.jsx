@@ -6,13 +6,14 @@ import { Draggable } from "gsap/Draggable";
 import usewindowstore from "@store/window.js";
 import useFinderStore from "@store/finder.js";
 import useSettingsStore from "@store/settings.js";
+import AccessPanel from "./AccessPanel.jsx";
 
 gsap.registerPlugin(Draggable);
 
 const Home = () => {
     const { openwindow } = usewindowstore();
     const { navigateTo } = useFinderStore();
-    const { wallpaper } = useSettingsStore();
+    const { wallpaper, displayBrightness } = useSettingsStore();
     const [desktopItems, setDesktopItems] = useState([]);
 
     useEffect(() => {
@@ -55,13 +56,21 @@ const Home = () => {
         }
     }, [desktopItems]);
 
+    const brightness = Math.min(100, Math.max(20, displayBrightness)) / 100;
+
     return (
-        <section id="home" className="w-full h-full relative" style={{
-            backgroundImage: `url(${wallpaper})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transition: 'background-image 0.6s ease',
-        }}>
+        <section
+            id="home"
+            className="w-full h-full relative"
+            style={{
+                backgroundImage: `url(${wallpaper})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                transition: 'background-image 0.6s ease, filter 0.2s ease',
+                filter: `brightness(${brightness})`,
+            }}
+        >
+            <AccessPanel />
             <ul>
                 {desktopItems.map((project) => (
                     <li

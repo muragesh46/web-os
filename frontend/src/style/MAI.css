@@ -1,0 +1,1112 @@
+@reference "../index.css";
+
+/* ─── Agent Root Container ──────────────────────────────────────────────────── */
+.agent-root {
+    position: fixed;
+    bottom: 12px;
+    right: 12px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    pointer-events: none;
+    font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+}
+
+/* ─── Floating Orb (The Icon) ───────────────────────────────────────────────── */
+.agent-orb {
+    width: 48px;
+    height: 48px;
+    background: transparent;
+    cursor: pointer;
+    pointer-events: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    border-radius: 50%;
+}
+
+/* Subtle inner glow effect behind the icon */
+.agent-orb::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.agent-orb svg {
+    display: none;
+    /* Hide if leftover */
+}
+
+.agent-orb:hover {
+    transform: scale(1.18) translateY(-2px);
+    box-shadow: 0 8px 24px;
+}
+
+.agent-orb:hover::before {
+    opacity: 0.9;
+    background: radial-gradient(circle at 50% 50%, transparent 80%);
+}
+
+.agent-orb-active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Elegant state changes (No annoying spinning/pulsing) */
+.agent-orb-listening {
+    transform: scale(1.05);
+}
+
+.agent-orb-processing {
+    transform: scale(1.05);
+}
+
+/* ─── Main Panel ──────────────────────────────────────────────────────────── */
+.agent-panel {
+    width: 380px;
+    max-height: 0;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: 24px;
+    /* Deep premium glassmorphism */
+    background: rgba(18, 18, 24, 0.75);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 40px 80px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: max-height 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.4s ease,
+        transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transform-origin: bottom right;
+    display: flex;
+    flex-direction: column;
+}
+
+.agent-panel-open {
+    max-height: 600px;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* ─── Panel Header ────────────────────────────────────────────────────────── */
+.agent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+}
+
+.agent-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.agent-header-orb {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.agent-header-title {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+}
+
+.agent-header-sub {
+    display: block;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+.agent-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.agent-icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.agent-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 1);
+    transform: translateY(-1px);
+}
+
+.agent-icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* ─── Chat Area ───────────────────────────────────────────────────────────── */
+.agent-chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: 360px;
+    min-height: 160px;
+    scrollbar-width: none;
+    /* Hide scrollbar for cleaner look */
+}
+
+.agent-chat::-webkit-scrollbar {
+    display: none;
+}
+
+/* Empty state */
+.agent-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.agent-empty-orb {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.agent-empty-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.agent-empty-sub {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0;
+    max-width: 240px;
+    line-height: 1.5;
+}
+
+/* ─── Chat Bubbles ────────────────────────────────────────────────────────── */
+.agent-bubble-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    animation: slide-up-fade 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.agent-bubble-user-row {
+    flex-direction: row-reverse;
+}
+
+.agent-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c3aed, #0ea5e9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.agent-bubble {
+    max-width: 82%;
+    border-radius: 18px;
+    padding: 12px 16px;
+    position: relative;
+    backdrop-filter: blur(10px);
+}
+
+.agent-bubble-user {
+    background: #f4f4f5;
+    color: #000000;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.agent-bubble-agent {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.agent-bubble-error {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5 !important;
+}
+
+.agent-bubble-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.agent-bubble-time {
+    display: block;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 6px;
+    text-align: right;
+    font-weight: 500;
+}
+
+/* ─── Typing / Tool Indicator ──────────────────────────────────────────────── */
+.agent-typing-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    animation: slide-up-fade 0.3s ease both;
+}
+
+.agent-typing-bubble {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.agent-tool-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.agent-typing-dots {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    height: 12px;
+}
+
+.agent-typing-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(192, 132, 252, 0.8);
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.agent-typing-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.agent-typing-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+/* ─── Quick Chips ─────────────────────────────────────────────────────────── */
+.agent-chips {
+    display: flex;
+    gap: 8px;
+    padding: 0 20px 12px;
+    flex-wrap: wrap;
+}
+
+.agent-chip {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.agent-chip:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.agent-chip:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* ─── Input Row ───────────────────────────────────────────────────────────── */
+.agent-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.agent-mode-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.agent-mode-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.agent-text-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+    font-family: inherit;
+    padding: 10px 16px;
+    outline: none;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.agent-text-input:focus {
+    border-color: rgba(167, 139, 250, 0.6);
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(167, 139, 250, 0.15);
+}
+
+.agent-text-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.agent-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.agent-send-btn:hover:not(:disabled) {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.6);
+}
+
+.agent-send-btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.agent-send-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.agent-voice-btn {
+    flex: 1;
+    height: 42px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.agent-voice-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.agent-voice-listening {
+    background: rgba(236, 72, 153, 0.15) !important;
+    border-color: rgba(236, 72, 153, 0.4) !important;
+    color: #fbcfe8 !important;
+}
+
+/* ─── Animations ──────────────────────────────────────────────────────────── */
+@keyframes slide-up-fade {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+        opacity: 0.3;
+    }
+
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ─── Light mode overrides ────────────────────────────────────────────────── */
+:root:not(.dark) .agent-panel {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow:
+        0 40px 80px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+:root:not(.dark) .agent-header {
+    border-color: rgba(0, 0, 0, 0.06);
+    background: rgba(0, 0, 0, 0.01);
+}
+
+:root:not(.dark) .agent-header-title {
+    color: rgba(0, 0, 0, 0.9);
+}
+
+:root:not(.dark) .agent-header-sub {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+:root:not(.dark) .agent-icon-btn {
+    background: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.6);
+}
+
+:root:not(.dark) .agent-icon-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.9);
+}
+
+:root:not(.dark) .agent-empty-title {
+    color: rgba(0, 0, 0, 0.85);
+}
+
+:root:not(.dark) .agent-empty-sub {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+:root:not(.dark) .agent-bubble-agent {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+:root:not(.dark) .agent-bubble-text {
+    color: rgba(0, 0, 0, 0.85);
+}
+
+:root:not(.dark) .agent-bubble-time {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+:root:not(.dark) .agent-typing-bubble {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+:root:not(.dark) .agent-chip {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: rgba(0, 0, 0, 0.6);
+}
+
+:root:not(.dark) .agent-chip:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.2);
+    color: rgba(0, 0, 0, 0.9);
+}
+
+:root:not(.dark) .agent-input-row {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+:root:not(.dark) .agent-text-input {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.9);
+}
+
+:root:not(.dark) .agent-text-input:focus {
+    border-color: rgba(0, 0, 0, 0.4);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+:root:not(.dark) .agent-text-input::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+:root:not(.dark) .agent-mode-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.6);
+}
+
+:root:not(.dark) .agent-mode-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.9);
+}
+
+:root:not(.dark) .agent-voice-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.7);
+}
+
+:root:not(.dark) .agent-orb {
+    background: transparent;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border: none;
+}
+
+:root:not(.dark) .agent-orb svg {
+    filter: none;
+}
+
+:root:not(.dark) .agent-orb-active {
+    background: rgba(240, 240, 240, 0.9);
+}
+
+/* ─── Streaming cursor ────────────────────────────────────────────────────────*/
+.mai-stream-cursor {
+    display: inline-block;
+    width: 2px;
+    animation: mai-blink 0.7s step-end infinite;
+    color: #a78bfa;
+    margin-left: 2px;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+@keyframes mai-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* ─── Markdown styles inside agent bubbles ───────────────────────────────────*/
+.mai-markdown {
+    font-size: 14px;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.mai-md-p {
+    margin: 0 0 6px 0;
+}
+
+.mai-md-p:last-child { margin-bottom: 0; }
+
+.mai-md-ul, .mai-md-ol {
+    margin: 4px 0 6px 0;
+    padding-left: 18px;
+}
+
+.mai-md-li {
+    margin-bottom: 3px;
+}
+
+.mai-md-strong {
+    font-weight: 700;
+    color: #fff;
+}
+
+.mai-md-a {
+    color: #a78bfa;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.mai-md-a:hover { color: #c4b5fd; }
+
+.mai-md-h {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 6px 0 4px;
+    color: #fff;
+}
+
+.mai-inline-code {
+    background: rgba(167, 139, 250, 0.15);
+    border: 1px solid rgba(167, 139, 250, 0.25);
+    border-radius: 5px;
+    padding: 1px 6px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: #c084fc;
+}
+
+.mai-code-block {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin: 6px 0;
+    overflow: auto;
+}
+
+.mai-code-block pre {
+    margin: 0;
+    padding: 12px 14px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #e2e8f0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ─── Header meta row ─────────────────────────────────────────────────────────*/
+.mai-header-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 3px;
+}
+
+/* ─── Model selector ──────────────────────────────────────────────────────────*/
+.mai-model-wrap {
+    position: relative;
+}
+
+.mai-model-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(167, 139, 250, 0.12);
+    border: 1px solid rgba(167, 139, 250, 0.25);
+    border-radius: 20px;
+    color: rgba(167, 139, 250, 0.9);
+    font-size: 10px;
+    font-weight: 600;
+    font-family: inherit;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.mai-model-btn:hover {
+    background: rgba(167, 139, 250, 0.2);
+    border-color: rgba(167, 139, 250, 0.5);
+    color: #c4b5fd;
+}
+
+.mai-model-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: rgba(18, 18, 28, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 4px;
+    min-width: 130px;
+    z-index: 9999;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: slide-up-fade 0.2s ease;
+}
+
+.mai-model-item {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 11px;
+    font-family: inherit;
+    padding: 7px 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mai-model-item:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.mai-model-active { background: rgba(255, 255, 255, 0.15) !important; color: #ffffff !important; }
+
+/* ─── Usage badge ─────────────────────────────────────────────────────────────*/
+.mai-usage-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.02em;
+}
+
+/* ─── Attached image preview ──────────────────────────────────────────────────*/
+.mai-img-preview {
+    position: relative;
+    margin: 0 20px 8px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    display: inline-block;
+}
+
+.mai-img-preview img {
+    display: block;
+    max-width: 200px;
+    max-height: 120px;
+    object-fit: cover;
+    border-radius: 11px;
+}
+
+.mai-img-remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.mai-img-remove:hover { background: rgba(239, 68, 68, 0.8); }
+
+/* ─── Attached image in bubble ────────────────────────────────────────────────*/
+.mai-attached-img {
+    display: block;
+    max-width: 180px;
+    max-height: 110px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ─── Attach button ───────────────────────────────────────────────────────────*/
+.mai-attach-btn {
+    flex-shrink: 0;
+    opacity: 0.65;
+    transition: opacity 0.2s, background 0.2s !important;
+}
+
+.mai-attach-btn:hover { opacity: 1; }
+
+/* ─── Light mode overrides for new elements ──────────────────────────────────*/
+:root:not(.dark) .mai-markdown { color: rgba(0, 0, 0, 0.85); }
+:root:not(.dark) .mai-md-strong { color: rgba(0, 0, 0, 0.9); }
+:root:not(.dark) .mai-inline-code { background: rgba(139, 92, 246, 0.1); color: #7c3aed; }
+:root:not(.dark) .mai-code-block { background: rgba(0, 0, 0, 0.05); border-color: rgba(0, 0, 0, 0.1); }
+:root:not(.dark) .mai-code-block pre { color: #1e293b; }
+:root:not(.dark) .mai-model-btn { background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2); color: #7c3aed; }
+:root:not(.dark) .mai-model-dropdown { background: rgba(255, 255, 255, 0.97); border-color: rgba(0, 0, 0, 0.1); }
+:root:not(.dark) .mai-model-item { color: rgba(0, 0, 0, 0.7); }
+:root:not(.dark) .mai-model-item:hover { background: rgba(0, 0, 0, 0.05); color: rgba(0, 0, 0, 0.9); }
+:root:not(.dark) .mai-usage-badge { color: rgba(0, 0, 0, 0.4); }
+
+/* ─── Threads sidebar ────────────────────────────────────────────────────────*/
+.mai-sidebar {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 220px;
+    background: rgba(12, 12, 20, 0.97);
+    backdrop-filter: blur(30px);
+    border-right: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px 0 0 24px;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    animation: slide-up-fade 0.2s ease;
+}
+.mai-sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 14px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0;
+}
+.mai-sidebar-title { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.85); flex: 1; }
+.mai-sidebar-list { flex: 1; overflow-y: auto; padding: 8px 6px; display: flex; flex-direction: column; gap: 2px; scrollbar-width: none; }
+.mai-sidebar-list::-webkit-scrollbar { display: none; }
+.mai-sidebar-empty { font-size: 11px; color: rgba(255,255,255,0.3); text-align: center; padding: 20px 10px; }
+.mai-sidebar-item { display: flex; align-items: center; gap: 4px; border-radius: 10px; }
+.mai-sidebar-item:hover { background: rgba(255,255,255,0.05); }
+.mai-sidebar-active { background: rgba(255,255,255,0.12) !important; }
+.mai-sidebar-btn {
+    flex: 1; display: flex; align-items: center; gap: 7px;
+    background: transparent; border: none; color: rgba(255,255,255,0.65);
+    font-size: 11px; font-family: inherit; padding: 8px 8px; cursor: pointer;
+    text-align: left; min-width: 0;
+}
+.mai-sidebar-btn span:first-of-type { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mai-sidebar-count { font-size: 10px; color: rgba(255,255,255,0.3); flex-shrink: 0; }
+.mai-sidebar-del {
+    width: 22px; height: 22px; border-radius: 6px; border: none;
+    background: transparent; color: rgba(255,255,255,0.3); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.15s;
+}
+.mai-sidebar-del:hover { background: rgba(239,68,68,0.15); color: #fca5a5; }
+.mai-sidebar-toggle { margin-right: 2px; }
+
+/* ─── Settings panel ─────────────────────────────────────────────────────────*/
+.mai-settings-panel {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(12, 12, 20, 0.98);
+    backdrop-filter: blur(30px);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    z-index: 11;
+    animation: slide-up-fade 0.2s ease;
+}
+.mai-settings-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.9);
+    flex-shrink: 0;
+}
+.mai-settings-body { flex: 1; overflow-y: auto; padding: 14px 20px 20px; display: flex; flex-direction: column; gap: 16px; scrollbar-width: none; }
+.mai-settings-body::-webkit-scrollbar { display: none; }
+.mai-settings-section { display: flex; flex-direction: column; gap: 7px; }
+.mai-settings-h { font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.8); text-transform: uppercase; letter-spacing: 0.08em; margin: 0; }
+.mai-settings-label { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.mai-settings-input {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; color: rgba(255,255,255,0.9); font-size: 12px; font-family: inherit;
+    padding: 8px 12px; outline: none; transition: border-color 0.2s;
+}
+.mai-settings-input:focus { border-color: rgba(167,139,250,0.5); }
+.mai-settings-ta { resize: vertical; min-height: 64px; }
+.mai-settings-btn {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border: none; border-radius: 12px; color: #fff;
+    font-size: 12px; font-weight: 600; font-family: inherit;
+    padding: 10px 16px; cursor: pointer; transition: opacity 0.2s;
+    display: flex; align-items: center; gap: 6px; justify-content: center;
+}
+.mai-settings-btn:hover { opacity: 0.9; }
+.mai-settings-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.mai-settings-btn-sm { padding: 7px 12px; font-size: 11px; background: rgba(255,255,255,0.1); color: #ffffff; }
+.mai-settings-btn-sm:hover { background: rgba(167,139,250,0.35); }
+
+/* ─── Quota / status display ─────────────────────────────────────────────────*/
+.mai-quota-bar { display: flex; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,255,255,0.6); }
+.mai-quota-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.mai-quota-ok { background: #4ade80; box-shadow: 0 0 6px #4ade8088; }
+.mai-quota-off { background: #f87171; }
+.mai-quota-model { display: flex; align-items: center; gap: 6px; font-size: 10px; color: rgba(255,255,255,0.4); padding-left: 4px; }
+
+/* ─── Offline banner ─────────────────────────────────────────────────────────*/
+.mai-offline-banner-inline {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(239,68,68,0.1); border-bottom: 1px solid rgba(239,68,68,0.2);
+    padding: 7px 20px; font-size: 11px; color: #fca5a5; flex-shrink: 0;
+}
+.mai-offline-banner-inline code { background: rgba(255,255,255,0.1); padding: 1px 5px; border-radius: 4px; font-size: 10px; }
+
+/* ─── In-chat search bar ─────────────────────────────────────────────────────*/
+.mai-search-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.07);
+    background: rgba(0,0,0,0.15); flex-shrink: 0;
+}
+.mai-search-bar svg { color: rgba(255,255,255,0.4); flex-shrink: 0; }
+.mai-search-input {
+    flex: 1; background: transparent; border: none; color: rgba(255,255,255,0.9);
+    font-size: 13px; font-family: inherit; outline: none;
+}
+.mai-search-input::placeholder { color: rgba(255,255,255,0.3); }
+.mai-search-clear { background: transparent; border: none; color: rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; }
+.mai-search-clear:hover { color: rgba(255,255,255,0.8); }
+
+/* ─── Star button ────────────────────────────────────────────────────────────*/
+.mai-bubble-footer { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 4px; }
+.mai-star-btn {
+    background: transparent; border: none; color: rgba(255,255,255,0.25);
+    cursor: pointer; display: flex; align-items: center; padding: 0;
+    transition: color 0.2s, transform 0.2s;
+}
+.mai-star-btn:hover { color: #fbbf24; transform: scale(1.2); }
+.mai-star-active { color: #fbbf24 !important; }
+
+/* ─── Session title input ────────────────────────────────────────────────────*/
+.mai-title-input {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 8px; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 700;
+    font-family: inherit; padding: 2px 8px; outline: none; width: 160px;
+}
+
+/* ─── Reminder list ──────────────────────────────────────────────────────────*/
+.mai-reminder-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.mai-reminder-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 10px;
+}
+.mai-reminder-item span { margin-left: auto; color: rgba(255, 255, 255, 0.6); }
+
+/* ─── Light mode patches ──────────────────────────────────────────────────────*/
+:root:not(.dark) .mai-sidebar { background: rgba(250,250,255,0.97); border-right-color: rgba(0,0,0,0.08); }
+:root:not(.dark) .mai-sidebar-title { color: rgba(0,0,0,0.85); }
+:root:not(.dark) .mai-sidebar-btn { color: rgba(0,0,0,0.65); }
+:root:not(.dark) .mai-sidebar-item:hover { background: rgba(0,0,0,0.04); }
+:root:not(.dark) .mai-sidebar-active { background: rgba(0,0,0,0.06) !important; }
+:root:not(.dark) .mai-settings-panel { background: rgba(250,250,255,0.98); }
+:root:not(.dark) .mai-settings-header { color: rgba(0,0,0,0.9); border-color: rgba(0,0,0,0.06); }
+:root:not(.dark) .mai-settings-input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: rgba(0,0,0,0.85); }
+:root:not(.dark) .mai-settings-label { color: rgba(0,0,0,0.5); }
+:root:not(.dark) .mai-offline-banner-inline { background: rgba(239,68,68,0.06); color: #dc2626; }
+:root:not(.dark) .mai-search-bar { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.06); }
+:root:not(.dark) .mai-search-input { color: rgba(0,0,0,0.85); }
+:root:not(.dark) .mai-search-bar svg { color: rgba(0,0,0,0.4); }
+:root:not(.dark) .mai-star-btn { color: rgba(0,0,0,0.2); }
+:root:not(.dark) .mai-title-input { background: rgba(0,0,0,0.05); color: rgba(0,0,0,0.9); }
+:root:not(.dark) .mai-quota-bar { color: rgba(0,0,0,0.6); }
+:root:not(.dark) .mai-quota-model { color: rgba(0,0,0,0.4); }
+:root:not(.dark) .mai-reminder-item { background: rgba(0,0,0,0.05); color: rgba(0,0,0,0.5); }
+
+/* ─── Drag and Drop overlay ──────────────────────────────────────────────────*/
+.mai-drag-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 24px;
+    border: 2px dashed rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+    gap: 10px;
+}
+.mai-drag-active {
+    outline: 2px solid #ffffff;
+}
+
+/* ─── Chat bubble actions ────────────────────────────────────────────────────*/
+.mai-bubble-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.mai-action-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    transition: color 0.2s, transform 0.2s;
+}
+.mai-action-btn:hover {
+    color: #fff;
+    transform: scale(1.1);
+}
+:root:not(.dark) .mai-action-btn { color: rgba(0,0,0,0.2); }
+:root:not(.dark) .mai-action-btn:hover { color: rgba(0,0,0,0.8); }

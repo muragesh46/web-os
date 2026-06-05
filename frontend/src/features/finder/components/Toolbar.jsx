@@ -25,38 +25,38 @@ function Toolbar() {
     const canGoForward = historyIndex < history.length - 1;
 
     return (
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-b border-gray-300 select-none">
+        <div className="flex items-center justify-between px-4 py-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 select-none">
             {/* Navigation & View Toggles */}
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
                     <button
                         onClick={goBack}
                         disabled={!canGoBack}
-                        className={`p-1 rounded ${canGoBack ? 'hover:bg-gray-200 text-gray-700' : 'text-gray-400'}`}
+                        className={`p-1 rounded ${canGoBack ? 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                     </button>
                     <button
                         onClick={goForward}
                         disabled={!canGoForward}
-                        className={`p-1 rounded ${canGoForward ? 'hover:bg-gray-200 text-gray-700' : 'text-gray-400'}`}
+                        className={`p-1 rounded ${canGoForward ? 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                     </button>
                 </div>
 
                 {/* View Modes */}
-                <div className="flex items-center bg-gray-200 rounded p-0.5">
+                <div className="flex items-center bg-gray-200 dark:bg-gray-700 rounded p-0.5">
                     <button
                         onClick={() => setViewMode('grid')}
-                        className={`p-1 rounded ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`p-1 rounded ${viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow-sm dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                         title="Grid View"
                     >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                     </button>
                     <button
                         onClick={() => setViewMode('list')}
-                        className={`p-1 rounded ${viewMode === 'list' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`p-1 rounded ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                         title="List View"
                     >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>
@@ -65,16 +65,16 @@ function Toolbar() {
 
                 {/* Sort Dropdown */}
                 <div className="relative group">
-                    <button className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-200">
+                    <button className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
                         Sort by <span className="capitalize text-xs font-semibold">{sortBy}</span>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </button>
-                    <div className="absolute hidden group-hover:block top-full left-0 mt-1 w-32 bg-white border border-gray-200 shadow-lg rounded py-1 z-50">
+                    <div className="absolute hidden group-hover:block top-full left-0 mt-1 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded py-1 z-50">
                         {['name', 'date', 'size', 'kind'].map((s) => (
                             <button
                                 key={s}
                                 onClick={() => setSortBy(s)}
-                                className={`block w-full text-left px-4 py-1 text-sm ${sortBy === s ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                                className={`block w-full text-left px-4 py-1 text-sm ${sortBy === s ? 'bg-blue-500 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                             >
                                 {s.charAt(0).toUpperCase() + s.slice(1)}
                             </button>
@@ -91,7 +91,7 @@ function Toolbar() {
                     placeholder="Search"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 pr-3 py-1.5 text-sm bg-gray-200 border border-transparent rounded-md focus:bg-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none w-48 transition-all"
+                    className="pl-8 pr-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 border border-transparent rounded-md focus:bg-white dark:focus:bg-gray-900 focus:border-blue-400 dark:text-white focus:ring-1 focus:ring-blue-400 outline-none w-48 transition-all"
                 />
             </div>
         </div>

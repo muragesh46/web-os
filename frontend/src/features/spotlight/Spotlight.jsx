@@ -121,14 +121,14 @@ export default function SpotlightSearch() {
             className="spotlight-overlay"
             onClick={(e) => { if (e.target === e.currentTarget) closeSpotlight(); }}
         >
-            <div className="spotlight-container">
+            <div className="spotlight-container dark:bg-gray-900/85 dark:text-gray-100 dark:shadow-[0_30px_80px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.1)_inset]">
                 {/* Search Input */}
                 <div className="spotlight-input-row">
                     <img src="/icons/search.svg" alt="search" className="spotlight-search-icon" />
                     <input
                         ref={inputRef}
                         type="text"
-                        className="spotlight-input"
+                        className="spotlight-input dark:text-white"
                         placeholder="Spotlight Search..."
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
@@ -145,7 +145,7 @@ export default function SpotlightSearch() {
                         {results.map((item, idx) => (
                             <li
                                 key={item.id}
-                                className={`spotlight-result-item ${idx === selectedIndex ? 'spotlight-result-selected' : ''}`}
+                                className={`spotlight-result-item ${idx === selectedIndex ? 'spotlight-result-selected dark:bg-blue-500/30' : 'dark:hover:bg-white/5'}`}
                                 onMouseEnter={() => setSelectedIndex(idx)}
                                 onClick={() => handleSelect(item)}
                             >
@@ -156,10 +156,10 @@ export default function SpotlightSearch() {
                                     onError={(e) => { e.target.src = '/images/folder.png'; }}
                                 />
                                 <div className="spotlight-result-text">
-                                    <span className="spotlight-result-label">{item.label}</span>
-                                    <span className="spotlight-result-subtitle">{item.subtitle}</span>
+                                    <span className="spotlight-result-label dark:text-white">{item.label}</span>
+                                    <span className="spotlight-result-subtitle dark:text-gray-400">{item.subtitle}</span>
                                 </div>
-                                <span className="spotlight-result-type">
+                                <span className="spotlight-result-type dark:text-gray-400">
                                     {item.type === 'app' ? '⌘ Open' : item.type === 'finder' ? '📁' : '📄'}
                                 </span>
                             </li>

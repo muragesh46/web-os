@@ -12,7 +12,7 @@ function UserDropdown({ onClose, activeUser }) {
     };
 
     const handleSettings = () => {
-        openwindow("settings");
+        openwindow("settings", { tab: "General" });
         onClose();
     };
 

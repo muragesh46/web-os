@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: web-os-mongodb-prod
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data_prod:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017 --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web-os:
+    image: ghcr.io/${GITHUB_REPOSITORY:-yourusername/yourrepo}:latest
+    container_name: web-os-prod
+    environment:
+      - MONGO_URI=mongodb://root:password@mongodb:27017/web-os?authSource=admin
+      - PORT=3001
+      - NODE_ENV=production
+      - JWT_SECRET=your_jwt_secret_key_here
+      # You can add other environment variables like OPENAI_API_KEY here
+    ports:
+      - '3001:3001'
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+volumes:
+  mongodb_data_prod:

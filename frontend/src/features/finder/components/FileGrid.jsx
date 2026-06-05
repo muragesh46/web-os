@@ -46,9 +46,17 @@ function FileGrid({ onFileContextMenu }) {
         }
     });
 
+    const isCodeFile = (file) => {
+        if (!file || !file.name) return false;
+        return /\.(js|py|ts|c|cpp|java|html|css)$/i.test(file.name);
+    };
+
     const handleDoubleClick = (file) => {
         if (file.type === 'folder') navigateTo(file._id);
         else {
+            if (isCodeFile(file)) {
+                return openwindow('code', { file });
+            }
             // Open file based on type
             if (file.fileType === 'pdf') return openwindow("resume"); // currently hardcoded resume pdf
             if (file.fileType === 'url' && file.content) return globalThis.window.open(file.content, "_blank");
@@ -102,9 +110,9 @@ function FileGrid({ onFileContextMenu }) {
 
     if (viewMode === 'list') {
         return (
-            <div className="flex-1 overflow-y-auto bg-white select-none relative" onClick={() => setSelectedId(null)}>
+            <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900 select-none relative" onClick={() => setSelectedId(null)}>
                 <table className="w-full text-left border-collapse cursor-default">
-                    <thead className="sticky top-0 bg-gray-50 border-b border-gray-200 text-xs text-gray-500 shadow-sm z-10">
+                    <thead className="sticky top-0 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 shadow-sm z-10">
                         <tr>
                             <th className="font-medium py-1.5 pl-6 pr-4 font-normal">Name</th>
                             <th className="font-medium px-4 py-1.5 font-normal">Date Modified</th>
@@ -124,17 +132,17 @@ function FileGrid({ onFileContextMenu }) {
                                 onClick={(e) => { e.stopPropagation(); setSelectedId(file._id); }}
                                 onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(file); }}
                                 onContextMenu={(e) => onFileContextMenu(e, file)}
-                                className={`border-b border-gray-100 last:border-none
-                                    ${dragOverId === file._id ? 'bg-blue-200 outline outline-2 outline-blue-400' : ''}
-                                    ${selectedId === file._id && dragOverId !== file._id ? 'bg-blue-100' : 'hover:bg-gray-50'}`}
+                                className={`border-b border-gray-100 dark:border-gray-700 last:border-none
+                                    ${dragOverId === file._id ? 'bg-blue-200 dark:bg-blue-900/50 outline outline-2 outline-blue-400 dark:outline-blue-500/50' : ''}
+                                    ${selectedId === file._id && dragOverId !== file._id ? 'bg-blue-100 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                             >
                                 <td className="py-1.5 pl-6 pr-4 flex items-center gap-2">
                                     <img src={file.icon || (file.type === 'folder' ? '/images/folder.png' : '/images/txt.png')} className="w-4 h-4 object-contain pointer-events-none" alt="icon" />
-                                    <span className="truncate max-w-[200px]">{file.name}</span>
+                                    <span className="truncate max-w-[200px] text-gray-800 dark:text-gray-200">{file.name}</span>
                                 </td>
-                                <td className="px-4 py-1.5 text-gray-500">{new Date(file.updatedAt).toLocaleDateString()}</td>
-                                <td className="px-4 py-1.5 text-gray-500">{file.type === 'folder' ? '--' : formatBytes(file.size)}</td>
-                                <td className="px-4 py-1.5 text-gray-500">{file.type === 'folder' ? 'Folder' : file.fileType.toUpperCase()}</td>
+                                <td className="px-4 py-1.5 text-gray-500 dark:text-gray-400">{new Date(file.updatedAt).toLocaleDateString()}</td>
+                                <td className="px-4 py-1.5 text-gray-500 dark:text-gray-400">{file.type === 'folder' ? '--' : formatBytes(file.size)}</td>
+                                <td className="px-4 py-1.5 text-gray-500 dark:text-gray-400">{file.type === 'folder' ? 'Folder' : file.fileType.toUpperCase()}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -144,7 +152,7 @@ function FileGrid({ onFileContextMenu }) {
     }
 
     return (
-        <div className="flex-1 overflow-y-auto bg-white p-6 select-none relative" onClick={() => setSelectedId(null)}>
+        <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900 p-6 select-none relative" onClick={() => setSelectedId(null)}>
             <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-6">
                 {sortedFiles.map(file => (
                     <div
@@ -158,8 +166,8 @@ function FileGrid({ onFileContextMenu }) {
                         onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(file); }}
                         onContextMenu={(e) => onFileContextMenu(e, file)}
                         className={`flex flex-col items-center gap-1 cursor-default p-2 rounded-lg
-                        ${dragOverId === file._id ? 'bg-blue-200 outline outline-2 outline-blue-400' : ''}
-                        ${selectedId === file._id && dragOverId !== file._id ? 'bg-blue-100/50 outline outline-1 outline-blue-300' : 'hover:bg-gray-50'}`}
+                        ${dragOverId === file._id ? 'bg-blue-200 dark:bg-blue-900/50 outline outline-2 outline-blue-400 dark:outline-blue-500/50' : ''}
+                        ${selectedId === file._id && dragOverId !== file._id ? 'bg-blue-100/50 dark:bg-blue-900/30 outline outline-1 outline-blue-300 dark:outline-blue-500/30' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                     >
                         <img
                             src={file.icon || (file.type === 'folder' ? '/images/folder.png' : '/images/txt.png')}
@@ -167,7 +175,7 @@ function FileGrid({ onFileContextMenu }) {
                             alt={file.name}
                         />
                         <span className={`text-[13px] text-center leading-snug break-words px-1 w-full line-clamp-2 pointer-events-none
-                            ${selectedId === file._id && dragOverId !== file._id ? 'bg-blue-500 text-white rounded' : 'text-gray-800'}`}>
+                            ${selectedId === file._id && dragOverId !== file._id ? 'bg-blue-500 text-white rounded' : 'text-gray-800 dark:text-gray-200'}`}>
                             {file.name}
                         </span>
                     </div>

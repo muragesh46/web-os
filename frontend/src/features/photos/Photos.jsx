@@ -26,10 +26,16 @@ const Photos = () => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onloadend = () => {
+        reader.onloadend = async () => {
             const album = activeTab === "Favorites" ? "Library" : activeTab;
-            uploadPhoto({ imageUrl: reader.result, title: file.name, album });
-            e.target.value = "";
+            try {
+                await uploadPhoto({ imageUrl: reader.result, title: file.name, album });
+            } catch (error) {
+                const message = error.response?.data?.message || error.message || "Could not upload photo";
+                alert(`Error: ${message}`);
+            } finally {
+                e.target.value = "";
+            }
         };
         reader.readAsDataURL(file);
     };
@@ -91,6 +97,9 @@ const Photos = () => {
                 title: photo.title,
                 album: photo.album || "Library",
                 isFavorite: true,
+            }).catch((error) => {
+                const message = error.response?.data?.message || error.message || "Could not save favorite";
+                alert(`Error: ${message}`);
             });
         } else {
             updatePhoto(photo._id, { isFavorite: !photo.isFavorite });
@@ -129,7 +138,7 @@ const Photos = () => {
             />
 
             {/* Window header — used as GSAP drag trigger */}
-            <div id="window-header" className="flex items-center justify-between px-3 py-1.5 border-b border-gray-200/40 bg-gray-50/20 backdrop-blur-sm">
+            <div id="window-header" className="flex items-center justify-between px-3 py-1.5 border-b border-gray-200/40 dark:border-gray-700/40 bg-gray-50/20 dark:bg-gray-800/20 backdrop-blur-sm">
                 <WindowControls target="photos" />
 
                 {/* Toolbar — wrapped in #window-controls so GSAP ignores clicks */}
@@ -146,7 +155,7 @@ const Photos = () => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={(e) => { if (e.key === "Escape") { setShowSearch(false); setSearchQuery(""); } }}
-                            className="text-sm px-2 py-0.5 rounded-md border border-gray-300 bg-white/80 outline-none w-40 text-gray-700"
+                            className="text-sm px-2 py-0.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 outline-none w-40 text-gray-700 dark:text-gray-200"
                         />
                     )}
                     <button
@@ -177,15 +186,15 @@ const Photos = () => {
 
             <div className="flex w-full flex-1 overflow-hidden">
                 {/* Sidebar */}
-                <div className="w-44 shrink-0 border-r border-gray-200/50 flex flex-col pt-3 bg-gray-50/30">
-                    <h2 className="px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Photos</h2>
+                <div className="w-44 shrink-0 border-r border-gray-200/50 dark:border-gray-700/50 flex flex-col pt-3 bg-gray-50/30 dark:bg-gray-800/30">
+                    <h2 className="px-5 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Photos</h2>
                     <ul className="flex flex-col gap-0.5 px-2">
                         {photosLinks.map(({ id, icon, title }) => (
                             <li
                                 key={id}
                                 className={`flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-all text-sm font-medium ${activeTab === title
                                         ? "bg-blue-500 text-white shadow-sm"
-                                        : "text-gray-600 hover:bg-gray-200/60"
+                                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-200/60 dark:hover:bg-gray-700/60"
                                     }`}
                                 onMouseDown={(e) => e.stopPropagation()}
                                 onClick={() => setActiveTab(title)}
@@ -202,7 +211,7 @@ const Photos = () => {
                 </div>
 
                 {/* Gallery */}
-                <div className="flex-1 overflow-y-auto relative p-4">
+                <div className="flex-1 overflow-y-auto relative p-4 bg-white dark:bg-gray-900">
                     {displayedPhotos.length === 0 ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
                             <p className="text-lg font-medium mb-1">No Photos Found</p>
@@ -237,7 +246,7 @@ const Photos = () => {
                                         <button
                                             type="button"
                                             title={photo.isFavorite ? "Remove from Favorites" : "Add to Favorites"}
-                                            className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-white transition-colors backdrop-blur-sm"
+                                            className="p-1.5 bg-white/90 dark:bg-gray-800/90 rounded-full shadow-md hover:bg-white dark:hover:bg-gray-800 transition-colors backdrop-blur-sm"
                                             onMouseDown={(e) => e.stopPropagation()}
                                             onClick={(e) => handleHeartClick(e, photo)}
                                         >
@@ -252,11 +261,11 @@ const Photos = () => {
                                             <button
                                                 type="button"
                                                 title="Delete photo"
-                                                className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-white transition-colors backdrop-blur-sm"
+                                                className="p-1.5 bg-white/90 dark:bg-gray-800/90 rounded-full shadow-md hover:bg-white dark:hover:bg-gray-800 transition-colors backdrop-blur-sm"
                                                 onMouseDown={(e) => e.stopPropagation()}
                                                 onClick={(e) => handleDeleteClick(e, photo._id)}
                                             >
-                                                <Trash2 size={14} className="text-gray-500 hover:text-red-500 transition-colors" />
+                                                <Trash2 size={14} className="text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors" />
                                             </button>
                                         )}
                                     </div>

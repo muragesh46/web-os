@@ -17,7 +17,7 @@ const Text = () => {
                 <h2>{name}</h2>
             </div>
 
-            <div className="p-6 bg-white">
+            <div className="p-6 bg-white dark:bg-gray-900">
                 {image ? (
                     <div className="flex gap-6">
                         {/* Image Column - Left Side */}
@@ -32,17 +32,17 @@ const Text = () => {
                         {/* Text Column - Right Side */}
                         <div className="flex-1 space-y-4">
                             {subtitle ? (
-                                <h3 className="text-xl font-semibold text-gray-900">{subtitle}</h3>
+                                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{subtitle}</h3>
                             ) : null}
 
                             {Array.isArray(description) && description.length > 0 ? (
-                                <div className="space-y-3 leading-relaxed text-base text-gray-700">
+                                <div className="space-y-3 leading-relaxed text-base text-gray-700 dark:text-gray-300">
                                     {description.map((para, idx) => (
                                         <p key={idx}>{para}</p>
                                     ))}
                                 </div>
                             ) : data?.content ? (
-                                <div className="space-y-3 leading-relaxed text-base text-gray-700">
+                                <div className="space-y-3 leading-relaxed text-base text-gray-700 dark:text-gray-300">
                                     <p>{data.content}</p>
                                 </div>
                             ) : null}
@@ -52,17 +52,17 @@ const Text = () => {
                     // Text-only layout when no image
                     <div className="space-y-4">
                         {subtitle ? (
-                            <h3 className="text-xl font-semibold text-gray-900">{subtitle}</h3>
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{subtitle}</h3>
                         ) : null}
 
                         {Array.isArray(description) && description.length > 0 ? (
-                            <div className="space-y-3 leading-relaxed text-base text-gray-700">
+                            <div className="space-y-3 leading-relaxed text-base text-gray-700 dark:text-gray-300">
                                 {description.map((para, idx) => (
                                     <p key={idx}>{para}</p>
                                 ))}
                             </div>
                         ) : data?.content ? (
-                            <div className="space-y-3 leading-relaxed text-base text-gray-700">
+                            <div className="space-y-3 leading-relaxed text-base text-gray-700 dark:text-gray-300">
                                 <p>{data.content}</p>
                             </div>
                         ) : null}

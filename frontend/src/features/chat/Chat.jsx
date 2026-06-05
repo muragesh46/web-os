@@ -198,12 +198,12 @@ function Chat() {
 
     if (!user) {
         return (
-            <div className="flex flex-col h-[550px] w-[750px] bg-white rounded-lg overflow-hidden border border-gray-200 relative">
-                <div id="window-header" className="flex items-center px-3 py-2 border-b border-gray-200 bg-gray-50 z-[1000000]">
+            <div className="flex flex-col h-[550px] w-[750px] bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 relative">
+                <div id="window-header" className="flex items-center px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 z-[1000000]">
                     <div id="window-controls">
                         <WindowControls target="chat" />
                     </div>
-                    <h2 className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-700">Messages</h2>
+                    <h2 className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-700 dark:text-gray-200">Messages</h2>
                 </div>
                 <div className="flex-1 relative">
                     <LockScreen />
@@ -213,19 +213,19 @@ function Chat() {
     }
 
     return (
-        <div className="flex flex-col h-[550px] w-[750px] bg-white rounded-lg overflow-hidden border border-gray-200 font-sans shadow-xl">
+        <div className="flex flex-col h-[550px] w-[750px] bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 font-sans shadow-xl">
             {/* Header */}
-            <div id="window-header" className="flex items-center px-3 py-2 border-b border-gray-200 bg-gray-50 shrink-0 relative">
+            <div id="window-header" className="flex items-center px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shrink-0 relative">
                 <div id="window-controls">
                     <WindowControls target="chat" />
                 </div>
-                <h2 className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-700">Messages</h2>
+                <h2 className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-700 dark:text-gray-200">Messages</h2>
             </div>
 
             <div className="flex flex-1 overflow-hidden relative">
                 {/* ── Contacts Sidebar ── */}
-                <div className="w-64 border-r border-gray-200 flex flex-col bg-gray-50/50 shrink-0">
-                    <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                <div className="w-64 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gray-50/50 dark:bg-gray-800/50 shrink-0">
+                    <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Contacts</p>
                         <button
                             onClick={() => setIsSearchOpen(true)}
@@ -252,8 +252,8 @@ function Chat() {
                                     key={u._id}
                                     onClick={() => selectUser(u)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all ${selectedUser?._id === u._id
-                                        ? 'bg-blue-50 border-r-4 border-blue-500'
-                                        : 'hover:bg-gray-100 border-r-4 border-transparent'
+                                        ? 'bg-blue-50 dark:bg-blue-900/20 border-r-4 border-blue-500'
+                                        : 'hover:bg-gray-100 dark:hover:bg-gray-700 border-r-4 border-transparent'
                                         }`}
                                 >
                                     <div className="relative shrink-0">
@@ -263,7 +263,7 @@ function Chat() {
                                         <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${isOnline(u._id) ? 'bg-green-400' : 'bg-gray-300'}`} />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-gray-700 truncate">{u.displayName || u.fullName || u.email}</p>
+                                        <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{u.displayName || u.fullName || u.email}</p>
                                         <p className={`text-[10px] ${isOnline(u._id) ? 'text-green-500' : 'text-gray-400'}`}>
                                             {isOnline(u._id) ? 'Active now' : 'offline'}
                                         </p>
@@ -280,21 +280,21 @@ function Chat() {
                 </div>
 
                 {/* ── Message Area ── */}
-                <div className="flex-1 flex flex-col bg-white">
+                <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
                     {!selectedUser ? (
                         <div className="flex-1 flex flex-col items-center justify-center gap-4 text-gray-400 p-10 text-center">
-                            <div className="w-16 h-16 rounded-3xl bg-gray-50 flex items-center justify-center">
+                            <div className="w-16 h-16 rounded-3xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
                                 <MessageSquare size={32} className="opacity-20" />
                             </div>
                             <div>
-                                <h3 className="text-gray-800 font-semibold">Your Messages</h3>
+                                <h3 className="text-gray-800 dark:text-gray-200 font-semibold">Your Messages</h3>
                                 <p className="text-sm mt-1">Select a contact to start talking</p>
                             </div>
                         </div>
                     ) : (
                         <>
                             {/* Chat Header */}
-                            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+                            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10">
                                 <div className="flex items-center gap-4">
                                     <div className="relative">
                                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
@@ -303,7 +303,7 @@ function Chat() {
                                         <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${isOnline(selectedUser._id) ? 'bg-green-400' : 'bg-gray-300'}`} />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold text-gray-800">{selectedUser.displayName || selectedUser.fullName || selectedUser.email}</p>
+                                        <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{selectedUser.displayName || selectedUser.fullName || selectedUser.email}</p>
                                         <p className="text-[10px] text-gray-400 font-medium">
                                             {typing === selectedUser._id ? (
                                                 <span className="text-blue-500 animate-pulse">is typing...</span>
@@ -350,7 +350,7 @@ function Chat() {
                                                     )}
                                                     <div className={`group relative px-4 py-2.5 rounded-2xl text-[13px] shadow-sm leading-relaxed ${isMine
                                                         ? 'bg-blue-600 text-white rounded-br-none'
-                                                        : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none'
                                                         }`}>
                                                         <p className="break-words">{msg.text}</p>
                                                         <p className={`text-[9px] mt-1 opacity-70 flex items-center gap-1 ${isMine ? 'justify-end' : ''}`}>
@@ -366,15 +366,15 @@ function Chat() {
                             </div>
 
                             {/* Input Bar */}
-                            <div className="px-6 py-4 bg-white border-t border-gray-100 shrink-0">
-                                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-2 border border-transparent focus-within:border-blue-200 focus-within:bg-white transition-all shadow-inner">
+                            <div className="px-6 py-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 shrink-0">
+                                <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-2xl px-4 py-2 border border-transparent focus-within:border-blue-200 dark:focus-within:border-blue-500/50 focus-within:bg-white dark:focus-within:bg-gray-900 transition-all shadow-inner">
                                     <input
                                         type="text"
                                         value={input}
                                         onChange={handleInputChange}
                                         onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                                         placeholder={`Message ${selectedUser.displayName || selectedUser.fullName || selectedUser.email}...`}
-                                        className="flex-1 py-1.5 bg-transparent text-sm outline-none text-gray-700"
+                                        className="flex-1 py-1.5 bg-transparent text-sm outline-none text-gray-700 dark:text-gray-200"
                                     />
                                     <button
                                         onClick={sendMessage}
@@ -393,9 +393,9 @@ function Chat() {
 
                 {/* ── Search Contacts Overlay ── */}
                 {isSearchOpen && (
-                    <div className="absolute inset-0 z-[100] bg-black/5 flex items-start justify-center pt-10 backdrop-blur-[2px]">
-                        <div className="w-[80%] max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
-                            <div className="p-4 border-b border-gray-100 flex items-center gap-3">
+                    <div className="absolute inset-0 z-[100] bg-black/5 dark:bg-black/40 flex items-start justify-center pt-10 backdrop-blur-[2px]">
+                        <div className="w-[80%] max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+                            <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
                                 <Search className="text-gray-400" size={18} />
                                 <input
                                     autoFocus
@@ -403,7 +403,7 @@ function Chat() {
                                     placeholder="Search people by name or email..."
                                     value={searchQuery}
                                     onChange={handleSearch}
-                                    className="flex-1 outline-none text-sm text-gray-700"
+                                    className="flex-1 outline-none text-sm text-gray-700 dark:text-gray-200 bg-transparent"
                                 />
                                 <button onClick={() => { setIsSearchOpen(false); setSearchResults([]); setSearchQuery(''); }} className="text-gray-400 hover:text-gray-600">
                                     <X size={18} />
@@ -425,14 +425,14 @@ function Chat() {
                                             <button
                                                 key={u._id}
                                                 onClick={() => addContact(u)}
-                                                className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors text-left group"
+                                                className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left group"
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold">
+                                                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 text-xs font-bold">
                                                         {(u.displayName || u.fullName || u.email || '?').charAt(0).toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-semibold text-gray-700">{u.displayName || u.fullName || u.email}</p>
+                                                        <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{u.displayName || u.fullName || u.email}</p>
                                                         <p className="text-[10px] text-gray-400">{u.email}</p>
                                                     </div>
                                                 </div>

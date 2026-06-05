@@ -47,16 +47,17 @@ const dockApps = [
         icon: "finder.png",
         canOpen: true,
     },
-    {
-        id: "Ask",
-        name: "Ask",
-        icon: "Ask.png",
-        canOpen: true,
-    },
+
     {
         id: "photos",
         name: "Gallery",
         icon: "photos.png",
+        canOpen: true,
+    },
+    {
+        id: "maps",
+        name: "Maps",
+        icon: "maps.png",
         canOpen: true,
     },
     {
@@ -66,11 +67,12 @@ const dockApps = [
         canOpen: true,
     },
     {
-        id: "terminal",
-        name: "Skills",
-        icon: "terminal.png",
+        id: "camera",
+        name: "Camera",
+        icon: "photos.png",
         canOpen: true,
     },
+
 
     {
         id: "trash",
@@ -94,12 +96,6 @@ export const launchpadApps = [
         windowKey: "finder"
     },
     {
-        id: "Ask",
-        name: "Ask",
-        icon: "Ask.png",
-        windowKey: "Ask"
-    },
-    {
         id: "photos",
         name: "Gallery",
         icon: "photos.png",
@@ -110,12 +106,6 @@ export const launchpadApps = [
         name: "Contact",
         icon: "contact.png",
         windowKey: "contact"
-    },
-    {
-        id: "terminal",
-        name: "Skills",
-        icon: "terminal.png",
-        windowKey: "terminal"
     },
     {
         id: "calendar",
@@ -152,6 +142,48 @@ export const launchpadApps = [
         name: "Settings",
         icon: "settings.png",
         windowKey: "settings"
+    },
+    {
+        id: "Ask",
+        name: "Ask",
+        icon: "Ask.png",
+        windowKey: "Ask"
+    },
+    {
+        id: "terminal",
+        name: "Skills",
+        icon: "terminal.png",
+        windowKey: "terminal"
+    },
+    {
+        id: "videocall",
+        name: "FaceTime",
+        icon: "videocall.png",
+        windowKey: "videocall"
+    },
+    {
+        id: "about",
+        name: "About me",
+        icon: "muragesh.jpg",
+        windowKey: "about"
+    },
+    {
+        id: "resume",
+        name: "Resume",
+        icon: "pdf.png",
+        windowKey: "resume"
+    },
+    {
+        id: "code",
+        name: "Code",
+        icon: "code.png",
+        windowKey: "code"
+    },
+    {
+        id: "camera",
+        name: "Camera",
+        icon: "photos.png",
+        windowKey: "camera"
     },
 ];
 
@@ -528,8 +560,12 @@ const WINDOW_CONFIG = {
     videocall: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     chat: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     calculator: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+    maps: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+    music: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     launchpad: { isOpen: false, zIndex: INITIAL_Z_INDEX + 100, data: null },
     settings: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+    code: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+    camera: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
 };
 
 export { INITIAL_Z_INDEX, WINDOW_CONFIG };

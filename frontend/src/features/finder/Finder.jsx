@@ -31,16 +31,16 @@ function ActionModal({ actionModal, setActionModal, onSubmit }) {
 
     return (
         <div
-            className="absolute inset-0 bg-black/20 backdrop-blur-sm z-[10000] flex items-center justify-center"
+            className="absolute inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-[10000] flex items-center justify-center"
             onClick={handleCancel}
             onContextMenu={(e) => e.stopPropagation()}
         >
             <div
-                className="bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200/50 w-72 overflow-hidden"
+                className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 w-72 overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="px-5 pt-4 pb-4">
-                    <h3 className="text-[13px] font-semibold text-gray-800 mb-3 text-center">{title}</h3>
+                    <h3 className="text-[13px] font-semibold text-gray-800 dark:text-gray-100 mb-3 text-center">{title}</h3>
                     <form onSubmit={handleSave}>
                         <input
                             autoFocus
@@ -50,7 +50,7 @@ function ActionModal({ actionModal, setActionModal, onSubmit }) {
                                 setActionModal((prev) => ({ ...prev, inputValue: e.target.value }))
                             }
                             onFocus={(e) => e.target.select()}
-                            className="w-full text-[13px] px-3 py-1.5 bg-gray-100/80 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all text-center"
+                            className="w-full text-[13px] px-3 py-1.5 bg-gray-100/80 dark:bg-gray-900/80 dark:text-white border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white dark:focus:bg-gray-800 transition-all text-center"
                             onKeyDown={(e) => {
                                 e.stopPropagation();
                                 if (e.key === 'Escape') handleCancel(e);
@@ -59,17 +59,17 @@ function ActionModal({ actionModal, setActionModal, onSubmit }) {
                         />
                     </form>
                 </div>
-                <div className="flex border-t border-gray-200/60 bg-gray-50/50">
+                <div className="flex border-t border-gray-200/60 dark:border-gray-700/60 bg-gray-50/50 dark:bg-gray-800/50">
                     <button
                         type="button"
-                        className="flex-1 py-2 text-[13px] font-medium text-gray-600 hover:bg-gray-100/50 transition-colors border-r border-gray-200/60"
+                        className="flex-1 py-2 text-[13px] font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors border-r border-gray-200/60 dark:border-gray-700/60"
                         onClick={handleCancel}
                     >
                         Cancel
                     </button>
                     <button
                         type="button"
-                        className="flex-1 py-2 text-[13px] font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                        className="flex-1 py-2 text-[13px] font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                         onClick={handleSave}
                     >
                         Save
@@ -80,9 +80,14 @@ function ActionModal({ actionModal, setActionModal, onSubmit }) {
     );
 }
 
+const isCodeFile = (file) => {
+    if (!file || !file.name) return false;
+    return /\.(js|py|ts|c|cpp|java|html|css)$/i.test(file.name);
+};
+
 // ─── Main Finder Component ──────────────────────────────────────────────────
 function Finder() {
-    const { window } = usewindowstore();
+    const { window, openwindow } = usewindowstore();
     const {
         fetchFiles, currentFolder, createItem, moveItemToTrash,
         renameItem, permanentlyDelete, restoreItem, updateFileContent, files
@@ -170,7 +175,11 @@ function Finder() {
     // ─── Edit file content (open editor) ─────────────────────────────────────
     const handleEditFile = (file) => {
         const latestFile = files.find(f => f._id === file._id) || file;
-        setEditorModal({ visible: true, file: latestFile });
+        if (isCodeFile(latestFile)) {
+            openwindow('code', { file: latestFile });
+        } else {
+            setEditorModal({ visible: true, file: latestFile });
+        }
     };
 
     // ─── Modal submit ─────────────────────────────────────────────────────────
@@ -250,13 +259,13 @@ function Finder() {
 
     return (
         <>
-            <div id="window-header" className="bg-gray-100/90 backdrop-blur rounded-t-lg">
+            <div id="window-header" className="bg-gray-100/90 dark:bg-gray-800/90 backdrop-blur rounded-t-lg">
                 <div id="window-controls">
                     <WindowControls target="finder" />
                 </div>
             </div>
 
-            <div className="flex flex-col h-full bg-white relative" ref={finderRef} onContextMenu={handleContextMenu}>
+            <div className="flex flex-col h-full bg-white dark:bg-gray-900 relative" ref={finderRef} onContextMenu={handleContextMenu}>
                 <Toolbar />
 
                 <div className="flex flex-1 overflow-hidden h-full">

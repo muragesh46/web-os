@@ -9,8 +9,12 @@ export default defineConfig({
   envDir: '../',
   plugins: [
     react(),
-    tailwindcss()
-  ],
+    !process.env.VITEST && tailwindcss()
+  ].filter(Boolean),
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+  },
   resolve: {
     alias: {
       "@components": resolve(dirname(fileURLToPath(import.meta.url)), 'src/components'),

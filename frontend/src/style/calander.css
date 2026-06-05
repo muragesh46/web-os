@@ -8,6 +8,12 @@
     border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
+.dark #calander {
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+}
+
 #calander h2 {
     font-weight: 700;
     font-size: 0.875rem;
@@ -25,11 +31,19 @@
     border-bottom: 1px solid #e5e7eb;
 }
 
+.dark #calander .calendar-selected-date {
+    border-bottom: 1px solid #374151;
+}
+
 #calander .calendar-selected-date p {
     text-align: center;
     font-size: 1rem;
     font-weight: 600;
     color: #1f2937;
+}
+
+.dark #calander .calendar-selected-date p {
+    color: #f3f4f6;
 }
 
 #calander .react-calendar {
@@ -59,8 +73,17 @@
     cursor: pointer;
 }
 
+.dark #calander .react-calendar__navigation button {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+}
+
 #calander .react-calendar__navigation button:hover {
     background: #dbeafe;
+}
+
+.dark #calander .react-calendar__navigation button:hover {
+    background: #374151;
 }
 
 #calander .react-calendar__navigation button:disabled {
@@ -81,6 +104,11 @@
     border-bottom: 1px solid #f3f4f6;
     padding-bottom: 0.5rem;
     margin-bottom: 0.5rem;
+}
+
+.dark #calander .react-calendar__month-view__weekdays {
+    color: #9ca3af;
+    border-bottom: 1px solid #374151;
 }
 
 #calander .react-calendar__month-view__weekdays__weekday {
@@ -114,6 +142,15 @@
     transform: scale(1.05);
 }
 
+.dark #calander .react-calendar__tile {
+    color: #e5e7eb;
+}
+
+.dark #calander .react-calendar__tile:enabled:hover,
+.dark #calander .react-calendar__tile:enabled:focus {
+    background: #374151;
+}
+
 #calander .react-calendar__tile--now {
     background: #dbeafe;
     color: #1d4ed8;
@@ -125,6 +162,17 @@
 #calander .react-calendar__tile--now:enabled:focus {
     background: #bfdbfe;
     transform: scale(1.05);
+}
+
+.dark #calander .react-calendar__tile--now {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.dark #calander .react-calendar__tile--now:enabled:hover,
+.dark #calander .react-calendar__tile--now:enabled:focus {
+    background: rgba(59, 130, 246, 0.3);
 }
 
 #calander .react-calendar__tile--active {
@@ -147,6 +195,10 @@
 
 #calander .react-calendar__month-view__days__day--neighboringMonth {
     color: #d1d5db;
+}
+
+.dark #calander .react-calendar__month-view__days__day--neighboringMonth {
+    color: #4b5563;
 }
 
 #calander .react-calendar__year-view__months,

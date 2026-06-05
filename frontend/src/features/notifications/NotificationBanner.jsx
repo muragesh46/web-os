@@ -25,8 +25,8 @@ function Banner({ notification }) {
                 }
             </div>
             <div className="notification-banner-body">
-                <p className="notification-banner-title">{notification.title}</p>
-                <p className="notification-banner-message">{notification.message}</p>
+                <p className="notification-banner-title dark:text-white">{notification.title}</p>
+                <p className="notification-banner-message dark:text-gray-300">{notification.message}</p>
             </div>
             <button
                 className="notification-banner-close"
@@ -38,9 +38,9 @@ function Banner({ notification }) {
 
 export default function NotificationBanner() {
     const { bannerQueue } = useNotificationStore();
-    const { notificationsEnabled } = useSettingsStore();
+    const { notificationsEnabled, doNotDisturb } = useSettingsStore();
 
-    if (!notificationsEnabled || bannerQueue.length === 0) return null;
+    if (!notificationsEnabled || doNotDisturb || bannerQueue.length === 0) return null;
 
     return (
         <div className="notification-banner-stack">

@@ -27,7 +27,7 @@ export default function IncomingCall() {
             <div className="relative pointer-events-auto bg-white/90 backdrop-blur-2xl border border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[2rem] p-5 flex items-center gap-6 min-w-[380px] animate-in zoom-in slide-in-from-top-10 duration-500 ease-out">
                 {/* Caller Avatar & Animated Rings */}
                 <div className="relative">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 flex items-center justify-center text-white text-3xl font-black shadow-xl ring-4 ring-white/50">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-700 via-gray-800 to-black flex items-center justify-center text-white text-3xl font-black shadow-xl ring-4 ring-white/50">
                         {incomingCall.callerName?.charAt(0)?.toUpperCase()}
                     </div>
                     {/* Multi-layered Ringing Animation */}

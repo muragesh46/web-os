@@ -98,10 +98,12 @@ const useFinderStore = create((set, get) => ({
         try {
             const newItem = await finderService.createFile(fileData);
             set((state) => ({ files: [...state.files, newItem], errorMessage: '' }));
+            return newItem;
         } catch (error) {
             const msg = (error.response?.data?.message) || error.message;
             set({ isError: true, message: msg, errorMessage: msg });
             alert(`Error: ${msg}`);
+            throw error;
         }
     },
 

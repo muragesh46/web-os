@@ -47,8 +47,8 @@ function Terminal() {
                         All tech stack loaded successfully.(100%)
                     </p>
 
-                    <p className='text-black'>
-                        <Flag size={15} fill="black" />
+                    <p className='text-black dark:text-gray-400'>
+                        <Flag size={15} className="fill-black dark:fill-gray-400" />
                         render time 3ms
                     </p>
                 </div>

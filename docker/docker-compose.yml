@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: web-os-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017 --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: web-os-backend
+    environment:
+      MONGO_URI: mongodb://root:password@mongodb:27017/web-os?authSource=admin
+      PORT: 3001
+      NODE_ENV: development
+      JWT_SECRET: your_jwt_secret_key_here
+    ports:
+      - '3001:3001'
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ../backend/src:/app/backend/src
+    command: npm run dev --prefix backend
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    container_name: web-os-frontend
+    environment:
+      VITE_API_URL: http://localhost:3001/api
+    ports:
+      - '5173:5173'
+    depends_on:
+      - backend
+    volumes:
+      - ../frontend/src:/app/src
+
+volumes:
+  mongodb_data:
+
+networks:
+  default:
+    name: web-os-network

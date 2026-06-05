@@ -34,6 +34,14 @@ const usewindowstore = create(
                 win.data = null;
             }),
 
+        clearWindowData: windowKey =>
+            set(state => {
+                const win = state.window[windowKey];
+                if (win) {
+                    win.data = null;
+                }
+            }),
+
         minimisewindow: windowKey =>
             set(state => {
                 const win = state.window[windowKey];

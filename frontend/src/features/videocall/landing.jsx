@@ -43,7 +43,7 @@ export default function LandingPage({ onJoin, user }) {
                     Crystal Audio
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
                     Screen Share
                 </div>
             </div>

@@ -1,42 +1,73 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *  Muragesh's AI — Local LLM Chat Service (replaces Gemini)
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ *  This talks to YOUR OWN AI model running on Ollama via the backend.
+ *  No API keys. No Google. Fully yours.
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
 
+import axios from 'axios';
 
-let modelInstance = null;
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
 
-function getModel() {
-    if (modelInstance) return modelInstance;
-    const apiKey = import.meta.env?.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-        throw new Error(
-            "Missing VITE_GEMINI_API_KEY. Please add it to your .env file."
-        );
-    }
-    const genAI = new GoogleGenerativeAI(apiKey);
-    modelInstance = genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
-    return modelInstance;
-}
+// Generate unique session ID for each "Ask" chat window
+let askSessionId = `ask-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+/**
+ * Send a message to your own AI model and get a response.
+ * Replaces the old askGemini() function.
+ */
 export async function askGemini(prompt) {
     try {
         const text = String(prompt ?? "").trim();
         if (!text) return "Please type something to ask.";
-        const model = getModel();
-        const result = await model.generateContent(text);
-        return result?.response?.text?.() ?? "";
+
+        const res = await axios.post(`${API_BASE_URL}/api/agent/simple-chat`, {
+            sessionId: askSessionId,
+            message: text,
+        });
+
+        return res.data.response || "";
     } catch (err) {
-        console.error("[Ask] Gemini error:", err);
+        console.error("[Ask] AI error:", err);
+        if (err.response?.data?.hint) {
+            throw new Error(`${err.response.data.error}. ${err.response.data.hint}`);
+        }
         throw err;
     }
 }
 
-export async function startChatSession(history = []) {
+/**
+ * Start a new chat session.
+ * Returns a session object compatible with the old Gemini chat API.
+ */
+export async function startChatSession() {
+    // Reset session ID for a fresh chat
+    askSessionId = `ask-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    // Clear old session on backend
     try {
-        const model = getModel();
-        return model.startChat({
-            history: history,
+        await axios.post(`${API_BASE_URL}/api/agent/clear-session`, {
+            sessionId: askSessionId,
         });
-    } catch (err) {
-        console.error("[Ask] Start chat error:", err);
-        throw err;
+    } catch {
+        // Ignore if backend isn't ready yet
     }
+
+    // Return a session-like object with sendMessage() to maintain API compatibility
+    return {
+        sendMessage: async (text) => {
+            const res = await axios.post(`${API_BASE_URL}/api/agent/simple-chat`, {
+                sessionId: askSessionId,
+                message: String(text).trim(),
+            });
+            return {
+                response: {
+                    text: () => res.data.response || "",
+                }
+            };
+        }
+    };
 }

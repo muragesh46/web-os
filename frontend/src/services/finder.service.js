@@ -13,12 +13,15 @@ const authHeader = () => {
     return {};
 };
 
-// Get files/folders (can filter by parentId and isTrash)
-const getFiles = async (parentId = null, isTrash = false, search = '') => {
+// Get files/folders (can filter by parentId, isTrash, search, and type)
+const getFiles = async (parentId = null, isTrash = false, search = '', type = '') => {
     const config = { headers: authHeader(), params: { isTrash } };
+    if (type) {
+        config.params.type = type;
+    }
     if (search) {
         config.params.search = search;
-    } else {
+    } else if (parentId || !type) {
         config.params.parentId = parentId || 'root';
     }
 
