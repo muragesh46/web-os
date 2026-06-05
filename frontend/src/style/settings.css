@@ -6,10 +6,10 @@
 .settings-container {
     display: flex;
     flex-direction: column;
-    width: 740px;
-    height: 520px;
-    max-width: 100vw;
-    max-height: 100vh;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
     color: #1d1d1f;
     overflow: hidden;

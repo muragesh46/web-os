@@ -589,7 +589,7 @@ const Settings = () => {
     };
 
     return (
-        <div id="settings" className={`settings-container ${store.reduceMotion ? 'settings-reduce-motion' : ''}`}>
+        <div className={`settings-container ${store.reduceMotion ? 'settings-reduce-motion' : ''}`}>
             {/* Header */}
             <div id="window-header" className="settings-header">
                 <div id="window-controls">
@@ -604,7 +604,6 @@ const Settings = () => {
                 {/* Sidebar */}
                 <aside
                     className="settings-sidebar"
-                    onMouseDown={(e) => e.stopPropagation()}
                 >
                     {SIDEBAR_SECTIONS.map((section) => (
                         <div key={section.label}>
@@ -635,7 +634,6 @@ const Settings = () => {
                 {/* Main */}
                 <main
                     className="settings-main"
-                    onMouseDown={(e) => e.stopPropagation()}
                     key={activeTab}
                 >
                     {renderContent()}
