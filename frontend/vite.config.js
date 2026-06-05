@@ -15,6 +15,9 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
   },
+  build: {
+    chunkSizeWarningLimit: 1600, // Suppress chunk size warnings
+  },
   resolve: {
     alias: {
       "@components": resolve(dirname(fileURLToPath(import.meta.url)), 'src/components'),
