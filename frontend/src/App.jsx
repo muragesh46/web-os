@@ -118,7 +118,7 @@ function App() {
 
   // Wake up Render backend on app load
   React.useEffect(() => {
-    const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+    const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || (import.meta.env.PROD ? '' : 'http://localhost:3001');
     fetch(API_BASE_URL).catch((err) => console.log('Backend wake-up ping failed:', err));
   }, []);
 

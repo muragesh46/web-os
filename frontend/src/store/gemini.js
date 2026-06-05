@@ -10,7 +10,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || (import.meta.env.PROD ? '' : 'http://localhost:3001');
 
 // Generate unique session ID for each "Ask" chat window
 let askSessionId = `ask-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

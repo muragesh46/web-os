@@ -63,7 +63,7 @@ const getLanguageFromFilename = (filename) => {
     return lang ? lang.id : "javascript";
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : "http://localhost:3001/api");
 const CODE_EXECUTE_API = `${API_BASE_URL}/code/execute`;
 const MIN_FONT_SIZE = 11;
 const MAX_FONT_SIZE = 22;

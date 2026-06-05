@@ -9,7 +9,7 @@ import useSocketStore from '@store/socket';
 import chatService from '@services/chat.service.js';
 import LockScreen from '@components/common/LockScreen.jsx';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || (import.meta.env.PROD ? '' : 'http://localhost:3001');
 
 function Chat() {
     const { user } = useAuthStore();
