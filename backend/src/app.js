@@ -1,5 +1,5 @@
 require('dotenv').config({ path: '../.env' });
-require('../.env.validation.js'); // Validate env vars
+require('../envValidation.js'); // Validate env vars
 
 const express = require('express');
 const http = require('http');

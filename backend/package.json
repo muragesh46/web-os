@@ -14,7 +14,7 @@
     "lint:fix": "eslint src --fix",
     "format": "prettier --write 'src/**/*.js'",
     "prepare": "cd .. && husky install backend/.husky 2>/dev/null || true",
-    "validate-env": "node .env.validation.js"
+    "validate-env": "node envValidation.js"
   },
   "keywords": [],
   "author": "",
