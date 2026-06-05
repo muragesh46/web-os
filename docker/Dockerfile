@@ -1,13 +1,13 @@
 # Multi-stage build for Web OS
 
 # Backend build stage
-FROM node:20-alpine AS backend-builder
+FROM node:24-alpine AS backend-builder
 WORKDIR /app/backend
 COPY backend/package*.json ./
 RUN npm ci --only=production
 
 # Frontend build stage
-FROM node:20-alpine AS frontend-builder
+FROM node:24-alpine AS frontend-builder
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci --legacy-peer-deps
@@ -15,7 +15,7 @@ COPY frontend ./
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine
+FROM node:24-alpine
 WORKDIR /app
 
 # Install backend dependencies

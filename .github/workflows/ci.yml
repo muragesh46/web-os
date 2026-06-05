@@ -29,14 +29,15 @@ jobs:
           cache-dependency-path: 'backend/package-lock.json'
 
       - name: Install backend dependencies
-        run: cd backend && npm ci
+        run: cd backend && npm ci || npm install
 
 
       - name: Run tests
-        run: cd backend && npm test
+        run: cd backend && npm run test:ci
         env:
           MONGO_URI: mongodb://localhost:27017/web-os-test
           JWT_SECRET: test-secret
+          VITE_GEMINI_API_KEY: test-key-for-ci
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -55,11 +56,11 @@ jobs:
           cache-dependency-path: 'frontend/package-lock.json'
 
       - name: Install frontend dependencies
-        run: cd frontend && npm ci
+        run: cd frontend && npm ci --legacy-peer-deps
 
 
       - name: Run tests
-        run: cd frontend && npm run test
+        run: cd frontend && npm run test -- --run
 
       - name: Build frontend
         run: cd frontend && npm run build
