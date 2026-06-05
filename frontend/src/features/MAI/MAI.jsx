@@ -92,9 +92,8 @@ function TypingIndicator({ toolName }) {
 function OfflineBanner({ status }) {
     if (status === 'ok' || status === 'unknown') return null;
     return (
-        <div className="mai-offline-banner">
-            <WifiOff size={12} />
-            <span>Ollama offline — run <code>ollama serve</code> to connect</span>
+        <div className="mai-offline-banner" title="Ollama offline">
+            <WifiOff size={14} color="#ef4444" />
         </div>
     );
 }

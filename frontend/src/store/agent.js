@@ -87,7 +87,7 @@ const useAgentStore = create(
 
             // ── Settings (persisted) ─────────────────────────────────────
             selectedModel: null,
-            aiProvider: 'Local',
+            aiProvider: 'Cloud',
             ttsEnabled: false,
             selectedVoiceURI: null,
             useStreaming: true,

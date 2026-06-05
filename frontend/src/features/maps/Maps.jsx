@@ -664,7 +664,7 @@ function Maps() {
     return (
         <div className="maps-app">
             <div id="window-header" className="maps-titlebar">
-                <div id="window-controls">
+                <div id="window-controls" style={{ position: 'relative', zIndex: 9999 }}>
                     <WindowControls target="maps" />
                 </div>
                 <div className="maps-window-title">
