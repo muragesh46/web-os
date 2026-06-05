@@ -6,7 +6,6 @@ import { Draggable } from "gsap/Draggable";
 import usewindowstore from "@store/window.js";
 import useFinderStore from "@store/finder.js";
 import useSettingsStore from "@store/settings.js";
-import AccessPanel from "./AccessPanel.jsx";
 
 gsap.registerPlugin(Draggable);
 
@@ -70,7 +69,6 @@ const Home = () => {
                 filter: `brightness(${brightness})`,
             }}
         >
-            <AccessPanel />
             <ul>
                 {desktopItems.map((project) => (
                     <li
