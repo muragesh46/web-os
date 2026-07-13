@@ -1,6 +1,6 @@
 # Web OS - Portfolio & Interactive Desktop
 
-Welcome! This isn't just a standard portfolio website—it's a fully interactive desktop experience running right in your browser. I built this to demonstrate what's possible with modern web technologies and to give you a fun way to explore my work.
+Welcome! This isn't just a standard portfolio website—it's a fully interactive desktop experience running right in your browser. I built this to demonstrate what's possible with modern web technologies.
 
 ## Project Structure
 
