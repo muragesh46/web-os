@@ -64,4 +64,4 @@ Follow these steps to set up and run the project locally:
 
 ## Contributing
 
-Contributions are always welcome! If you have ideas for improvements or find any bugs, please feel free to submit a Pull Request.
+Contributions are always welcome! If you have ideas for improvements or find any bugs, please feel free to submit a Pull Request
