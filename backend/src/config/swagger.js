@@ -1,4 +1,3 @@
-const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
 const options = {
@@ -64,11 +63,28 @@ const options = {
   apis: ['./src/apps/*/routes.js', './src/routes/*.js'],
 };
 
-const specs = swaggerJsdoc(options);
+let cachedSpecs = null;
+const getSpecs = () => {
+  if (!cachedSpecs) {
+    try {
+      const swaggerJsdoc = require('swagger-jsdoc');
+      cachedSpecs = swaggerJsdoc(options);
+    } catch (err) {
+      console.warn('Swagger doc generation fallback:', err.message);
+      cachedSpecs = options.definition;
+    }
+  }
+  return cachedSpecs;
+};
 
 const setupSwagger = (app) => {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: true }));
+  app.use('/api-docs', (req, res, next) => {
+    const specs = getSpecs();
+    swaggerUi.serve(req, res, () => {
+      swaggerUi.setup(specs, { explorer: true })(req, res, next);
+    });
+  });
   console.log('📚 Swagger docs available at http://localhost:3001/api-docs');
 };
 
-module.exports = { setupSwagger, specs };
+module.exports = { setupSwagger, get specs() { return getSpecs(); } };

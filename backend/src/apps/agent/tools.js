@@ -197,9 +197,19 @@ const tools = {
 
     deleteFile: async ({ filePath }) => {
         console.log(`[Host Agent] Deleting file: ${filePath}`);
+        if (!filePath) return 'Error: filePath is required.';
         try {
-            const expanded = filePath.replace('~', process.env.HOME);
-            fs.unlinkSync(expanded);
+            const expanded = filePath.replace('~', process.env.HOME || '');
+            const resolved = path.resolve(expanded);
+            const lower = resolved.toLowerCase();
+
+            // Prevent deleting protected or system paths
+            const protectedPaths = ['.ssh', '.env', '.git', '/etc', '/bin', '/usr', '/system', 'library'];
+            if (protectedPaths.some(p => lower.includes(p))) {
+                return `Blocked: Deletion of protected file or directory "${filePath}" is not allowed.`;
+            }
+
+            fs.unlinkSync(resolved);
             return `File deleted: ${filePath}`;
         } catch (err) {
             return `Error deleting file: ${err.message}`;

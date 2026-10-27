@@ -9,7 +9,7 @@ const Conversation = require('./conversation.model');
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const DEFAULT_MODEL = process.env.OLLAMA_MODEL || 'qwen2.5:3b';
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 const MAX_HISTORY_MESSAGES = 30; // sliding context window
 
 // ── Tool definitions ─────────────────────────────────────────────────────────
@@ -390,9 +390,9 @@ function trimHistory(messages) {
 }
 
 // ── Gemini (Cloud) Helpers ───────────────────────────────────────────────────
-async function geminiRequest(systemPrompt, messages) {
-    const key = process.env.GEMINI_API_KEY; // fix #2: was VITE_GEMINI_API_KEY
-    if (!key) throw new Error("GEMINI_API_KEY is missing in .env for Cloud Provider.");
+async function geminiRequest(systemPrompt, messages, userApiKey = null) {
+    const key = userApiKey || process.env.GEMINI_API_KEY;
+    if (!key) throw new Error("GEMINI_API_KEY is missing. Please configure your Google Gemini API key.");
 
     const geminiMessages = messages.map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',
@@ -404,64 +404,110 @@ async function geminiRequest(systemPrompt, messages) {
         contents: geminiMessages,
     };
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-    
-    if (!response.ok) throw new Error(`Gemini Error: ${await response.text()}`);
-    const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-}
+    const candidateModels = [
+        process.env.GEMINI_MODEL,
+        'gemini-2.5-flash-lite',
+        'gemini-3.8-flash',
+        'gemini-flash-latest'
+    ].filter(Boolean);
 
-async function geminiStream(systemPrompt, messages, onChunk) {
-    const key = process.env.GEMINI_API_KEY; // fix #2: was VITE_GEMINI_API_KEY
-    if (!key) throw new Error("GEMINI_API_KEY is missing in .env for Cloud Provider.");
+    let lastError = null;
+    for (const modelName of candidateModels) {
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-    const geminiMessages = messages.map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content || '' }]
-    })).filter(m => m.parts[0].text);
-
-    const payload = {
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: geminiMessages,
-    };
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?key=${key}&alt=sse`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-    
-    if (!response.ok) throw new Error(`Gemini Error: ${await response.text()}`);
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let fullText = '';
-
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
-        for (const line of lines) {
-            try {
-                const data = JSON.parse(line.slice(6));
+            if (response.ok) {
+                const data = await response.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (text) {
-                    fullText += text;
-                    onChunk(text);
-                }
-            } catch (e) {}
+                if (text) return text;
+            } else {
+                const errText = await response.text();
+                lastError = new Error(`Gemini Error (${modelName}): ${errText}`);
+            }
+        } catch (err) {
+            lastError = err;
         }
     }
-    return fullText;
+
+    throw lastError || new Error("Failed to get response from Gemini API.");
+}
+
+async function geminiStream(systemPrompt, messages, onChunk, userApiKey = null) {
+    const key = userApiKey || process.env.GEMINI_API_KEY;
+    if (!key) throw new Error("GEMINI_API_KEY is missing. Please configure your Google Gemini API key.");
+
+    const geminiMessages = messages.map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content || '' }]
+    })).filter(m => m.parts[0].text);
+
+    const payload = {
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: geminiMessages,
+    };
+
+    const candidateModels = [
+        process.env.GEMINI_MODEL,
+        'gemini-2.5-flash-lite',
+        'gemini-3.8-flash',
+        'gemini-flash-latest'
+    ].filter(Boolean);
+
+    for (const modelName of candidateModels) {
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:streamGenerateContent?key=${key}&alt=sse`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) continue;
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullText = '';
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const jsonStr = line.slice(6).trim();
+                        if (jsonStr) {
+                            try {
+                                const parsed = JSON.parse(jsonStr);
+                                const chunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                                if (chunk) {
+                                    fullText += chunk;
+                                    onChunk(chunk);
+                                }
+                            } catch { }
+                        }
+                    }
+                }
+            }
+
+            if (fullText) return fullText;
+        } catch { }
+    }
+
+    // Fallback to non-streaming if stream endpoint had issues
+    const fallbackText = await geminiRequest(systemPrompt, messages, key);
+    onChunk(fallbackText);
+    return fallbackText;
 }
 
 // ── Main chat (with tool calling + persistent memory) ────────────────────────
-async function chat(sessionId, userMessage, context = {}, userId = null, modelName = null, provider = 'Local') {
+async function chat(sessionId, userMessage, context = {}, userId = null, modelName = null, provider = 'Cloud', userApiKey = null) {
     const model = modelName || DEFAULT_MODEL;
 
     // Load from DB if userId given, otherwise fallback to in-memory
@@ -480,7 +526,7 @@ async function chat(sessionId, userMessage, context = {}, userId = null, modelNa
     const newMessages = [{ role: 'user', content: userMessage }];
 
     if (provider === 'Cloud') {
-        const finalText = await geminiRequest(systemPrompt, trimHistory(messages));
+        const finalText = await geminiRequest(systemPrompt, trimHistory(messages), userApiKey);
         messages.push({ role: 'assistant', content: finalText });
         newMessages.push({ role: 'assistant', content: finalText });
         if (userId) await saveMessages(userId, sessionId, newMessages);
@@ -554,7 +600,7 @@ async function chat(sessionId, userMessage, context = {}, userId = null, modelNa
 }
 
 // ── Streaming chat (with tool calling via chunks) ─────────────────────────────
-async function streamChat(sessionId, userMessage, context = {}, userId = null, modelName = null, provider = 'Local', onChunk) {
+async function streamChat(sessionId, userMessage, context = {}, userId = null, modelName = null, provider = 'Cloud', onChunk, userApiKey = null) {
     const model = modelName || DEFAULT_MODEL;
     let messages = [];
     let convSummary = '';
@@ -572,7 +618,7 @@ async function streamChat(sessionId, userMessage, context = {}, userId = null, m
     const newMessages = [{ role: 'user', content: userMessage }];
 
     if (provider === 'Cloud') {
-        const fullText = await geminiStream(systemPrompt, trimHistory(messages), onChunk);
+        const fullText = await geminiStream(systemPrompt, trimHistory(messages), onChunk, userApiKey);
         messages.push({ role: 'assistant', content: fullText });
         newMessages.push({ role: 'assistant', content: fullText });
         if (userId) await saveMessages(userId, sessionId, newMessages);
@@ -658,37 +704,16 @@ async function streamChat(sessionId, userMessage, context = {}, userId = null, m
 }
 
 // ── Simple chat (no tools) ───────────────────────────────────────────────────
-async function simpleChat(sessionId, userMessage, userId = null, modelName = null) {
-    const model = modelName || DEFAULT_MODEL;
-    let messages = [];
-
-    if (userId) {
-        const conv = await getOrCreateConversation(userId, sessionId, model);
-        messages = conv.messages.map(m => ({ role: m.role, content: m.content }));
-    }
-
-    messages.push({ role: 'user', content: userMessage });
-
-    const response = await ollamaRequest('/api/chat', {
-        model,
-        messages: [
-            { role: 'system', content: `You are MAI — Muragesh's personal AI assistant. Be helpful, concise, and never reveal you are any existing AI model.` },
-            ...trimHistory(messages),
-        ],
-        stream: false,
-        options: { temperature: 0.7, num_predict: 2048 },
-    });
-
-    if (!response.message) throw new Error('No response from AI model');
-    const reply = response.message.content || '';
-
+async function simpleChat(sessionId, userMessage, userId = null, modelName = null, userApiKey = null) {
+    const key = userApiKey || process.env.GEMINI_API_KEY;
+    const systemPrompt = "You are Ask AI, an intelligent, fast, and helpful assistant for Web OS. Be direct, clear, and friendly.";
+    const reply = await geminiRequest(systemPrompt, [{ role: 'user', content: userMessage }], key);
     if (userId) {
         await saveMessages(userId, sessionId, [
             { role: 'user', content: userMessage },
             { role: 'assistant', content: reply },
         ]);
     }
-
     return reply;
 }
 
@@ -709,27 +734,14 @@ async function clearSession(sessionId, userId = null) {
     }
 }
 
-// ── List available models from Ollama ────────────────────────────────────────
+// ── List available models from Ollama / Gemini ────────────────────────────────
 async function listModels() {
-    try {
-        // Use GET (not POST) for /api/tags — fix #14
-        const response = await ollamaGet('/api/tags');
-        return (response.models || []).map(m => m.name);
-    } catch {
-        return [DEFAULT_MODEL];
-    }
+    return ['gemini-2.5-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
 }
 
 // ── Health check ────────────────────────────────────────────────────────────
 async function checkHealth() {
-    try {
-        await ollamaRequest('/api/generate', {
-            model: DEFAULT_MODEL, prompt: 'hi', stream: false, options: { num_predict: 1 },
-        });
-        return { status: 'ok', model: DEFAULT_MODEL };
-    } catch (err) {
-        return { status: 'error', error: err.message };
-    }
+    return { status: 'ok', provider: 'Gemini (Cloud)', model: 'gemini-2.5-flash-lite' };
 }
 
 module.exports = { chat, streamChat, simpleChat, getHistory, clearSession, listModels, checkHealth, analyzeImage, getOllamaLoad, DEFAULT_MODEL };

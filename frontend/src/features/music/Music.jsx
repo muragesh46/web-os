@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import WindowControls from "@components/common/WindowControl.jsx";
 import WindowWrapper from "@hoc/WindowWrapper.jsx";
+import usewindowstore from "@store/window.js";
 import "@style/music.css";
 
 // ── Curated sample tracks (royalty-free audio from pixabay CDN) ──
@@ -209,6 +210,16 @@ function Music() {
     const progressBarRef = useRef(null);
 
     const currentTrack = currentTrackIndex !== null ? SAMPLE_TRACKS[currentTrackIndex] : null;
+
+    const { window: appWindow } = usewindowstore();
+    const isMusicOpen = appWindow?.music?.isOpen;
+
+    useEffect(() => {
+        if (!isMusicOpen && isPlaying) {
+            audioRef.current?.pause();
+            setIsPlaying(false);
+        }
+    }, [isMusicOpen, isPlaying]);
 
     // ── Filtered tracks ──
     const displayedTracks = useMemo(() => {

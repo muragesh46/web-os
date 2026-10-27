@@ -1,0 +1,23 @@
+{
+  "name": "web-os-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive Web OS portfolio and desktop environment",
+  "scripts": {
+    "dev": "npx -y concurrently -k -n \"BACKEND,FRONTEND\" -c \"cyan,magenta\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "build": "npm run build --prefix frontend",
+    "start": "npm start --prefix backend",
+    "lint": "npm run lint --prefix frontend && npm run lint --prefix backend"
+  },
+  "keywords": [
+    "web-os",
+    "portfolio",
+    "desktop",
+    "react",
+    "vite"
+  ],
+  "author": "Muragesh",
+  "license": "MIT"
+}

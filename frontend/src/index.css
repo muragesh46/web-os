@@ -16,13 +16,14 @@ html,
 body,
 #root {
     width: 100dvw;
-    overflow: hidden;
     height: 100dvh;
-    background-color: black;
+    overflow: hidden;
+    background-color: #0b0f17;
     background-image: url("/images/wallpaper.png");
-    background-size: 30%;
+    background-size: cover;
     background-repeat: no-repeat;
-    background-position: center;
+    background-position: center center;
+    background-attachment: fixed;
     margin: 0;
     padding: 0;
 }
@@ -46,7 +47,8 @@ body,
 }
 
 @layer base {
-    main {
+    #desktop-main,
+    .desktop-main {
         @apply w-dvw h-dvh overflow-hidden;
     }
 
@@ -83,14 +85,10 @@ body,
     }
 
     #welcome {
-        @apply text-gray-200 flex flex-col justify-center items-center absolute top-12 left-1/2 -translate-x-1/2 select-none max-sm:h-screen max-sm:w-full max-sm:px-10 z-10;
+        @apply text-gray-200 flex flex-col justify-center items-center absolute top-12 left-1/2 -translate-x-1/2 select-none pointer-events-none z-10;
 
         .small-screen {
-            @apply sm:hidden m-7 bg-red-300/20 backdrop-blur-lg p-3 rounded-md absolute top-10;
-
-            p {
-                @apply flex-1 text-[16px] text-center font-roboto text-gray-400;
-            }
+            @apply hidden;
         }
     }
 
@@ -202,7 +200,7 @@ body,
     }
 
     #contact {
-        @apply max-w-2xl bg-white dark:bg-gray-900 dark:text-gray-100 shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+        @apply w-[540px] max-w-[95vw] max-h-[82vh] bg-white dark:bg-gray-900 dark:text-gray-100 shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden flex flex-col;
 
         h2 {
             @apply font-bold text-sm text-center w-full;
@@ -211,26 +209,10 @@ body,
         h3 {
             @apply text-xl font-semibold;
         }
-
-        ul {
-            @apply flex items-center gap-3;
-
-            li {
-                @apply rounded-lg p-3 w-60 hover:-translate-y-0.5 hover:scale-105 origin-center transition-all duration-300;
-
-                a {
-                    @apply space-y-5;
-                }
-
-                p {
-                    @apply font-semibold text-sm text-white;
-                }
-            }
-        }
     }
 
     #photos {
-        @apply w-[50rem] h-[35rem] bg-white dark:bg-gray-900 shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden flex flex-col;
+        @apply w-[50rem] max-w-[96vw] h-[35rem] max-h-[82vh] bg-white dark:bg-gray-900 shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden flex flex-col;
 
         .sidebar {
             @apply w-3/12 flex-none bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col p-5;
@@ -286,7 +268,7 @@ body,
     }
 
     #finder {
-        @apply w-3xl shadow-2xl drop-shadow-2xl overflow-hidden rounded-xl;
+        @apply w-[820px] max-w-[96vw] h-[540px] max-h-[82vh] shadow-2xl drop-shadow-2xl overflow-hidden rounded-xl flex flex-col;
 
         .sidebar {
             @apply w-48 bg-gray-50 dark:bg-gray-800/80 border-r border-gray-200 dark:border-gray-700 flex flex-col p-5 space-y-3;
@@ -330,7 +312,7 @@ body,
     }
 
     #txtfile {
-        @apply w-fit max-w-4xl bg-white dark:bg-gray-900 dark:text-gray-100 shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+        @apply w-[640px] max-w-[95vw] max-h-[82vh] bg-white dark:bg-gray-900 dark:text-gray-100 shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden flex flex-col;
 
         h2 {
             @apply font-bold text-sm text-center w-full;
@@ -338,7 +320,7 @@ body,
     }
 
     #about {
-        @apply w-fit max-w-4xl bg-white dark:bg-gray-900 dark:text-gray-100 shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+        @apply w-[680px] max-w-[95vw] max-h-[82vh] bg-white dark:bg-gray-900 dark:text-gray-100 shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden flex flex-col;
 
         h2 {
             @apply font-bold text-sm text-center w-full;
@@ -379,7 +361,7 @@ body,
     }
 
     #camera {
-        @apply w-[48rem] h-[36rem] bg-white dark:bg-gray-900 shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden flex flex-col;
+        @apply w-[48rem] max-w-[96vw] h-[36rem] max-h-[82vh] bg-white dark:bg-gray-900 shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden flex flex-col;
 
         #window-header {
             @apply flex items-center justify-center relative flex-shrink-0;
@@ -413,7 +395,7 @@ body,
     }
 
     #home {
-        @apply relative z-0 max-sm:hidden w-full h-full;
+        @apply absolute inset-0 z-0 w-full h-full overflow-hidden;
 
         ul {
             li {

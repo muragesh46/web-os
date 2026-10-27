@@ -49,6 +49,7 @@
     display: flex;
     flex: 1;
     min-height: 0;
+    height: calc(100% - 46px);
     overflow: hidden;
 }
 
@@ -139,9 +140,35 @@
 /* ── Main Content ── */
 .settings-main {
     flex: 1;
-    overflow-y: auto;
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto !important;
+    overflow-x: hidden;
     padding: 20px 24px 28px;
     scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+.settings-main::-webkit-scrollbar,
+.settings-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.settings-main::-webkit-scrollbar-track,
+.settings-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.settings-main::-webkit-scrollbar-thumb,
+.settings-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 9999px;
+}
+
+.dark .settings-main::-webkit-scrollbar-thumb,
+.dark .settings-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .settings-section {

@@ -15,6 +15,7 @@ function WindowWrapper(Component, windowKey) {
         const zIndex = win?.zIndex ?? 0;
         const ref = useRef(null);
         const prevIsOpenRef = useRef(isOpen);
+        const hasPositionedRef = useRef(false);
 
         useGSAP(() => {
             const el = ref.current;
@@ -52,6 +53,10 @@ function WindowWrapper(Component, windowKey) {
                 } else {
                     el.style.display = "none";
                 }
+                if (!minimised) {
+                    // Full close resets position for next launch
+                    hasPositionedRef.current = false;
+                }
             }
 
             prevIsOpenRef.current = isOpen;
@@ -61,23 +66,36 @@ function WindowWrapper(Component, windowKey) {
             if (!el || !isOpen) return;
 
             const ctx = gsap.context(() => {
-                const winWidth = el.offsetWidth || 400;
+                const winWidth = el.offsetWidth || 500;
+                const winHeight = el.offsetHeight || 400;
+                const NAVBAR_HEIGHT = 32;
 
-                const NAVBAR_HEIGHT = 30;
+                // Center window nicely on initial open
+                const x = Math.max(10, Math.round((window.innerWidth - winWidth) / 2));
+                const y = Math.max(NAVBAR_HEIGHT + 8, Math.round((window.innerHeight - winHeight) / 3));
 
-                let x, y;
-                // Center all windows
-                x = (window.innerWidth - winWidth) / 2;
-                y = NAVBAR_HEIGHT + 10;
-
-                gsap.set(el, { left: x, top: y, x: 0, y: 0, position: 'absolute' });
+                if (!hasPositionedRef.current) {
+                    gsap.set(el, { left: x, top: y, x: 0, y: 0, position: 'absolute' });
+                    hasPositionedRef.current = true;
+                }
 
                 const headerEl = el.querySelector('[id="window-header"], [data-drag-handle="true"]');
-                const controlsEl = el.querySelector('[id="window-controls"]');
 
-                Draggable.create(el, {
+                // Dynamic bounds calculated from actual element dimensions so minY <= maxY is always satisfied
+                const calcBounds = () => {
+                    const w = el.offsetWidth || winWidth;
+                    const h = el.offsetHeight || winHeight;
+                    return {
+                        top: NAVBAR_HEIGHT,
+                        left: -w + 80,
+                        width: window.innerWidth + 2 * w - 160,
+                        height: window.innerHeight + h - (NAVBAR_HEIGHT + 70),
+                    };
+                };
+
+                const [draggable] = Draggable.create(el, {
                     type: "x,y",
-                    bounds: { top: NAVBAR_HEIGHT, left: 0, width: window.innerWidth, height: window.innerHeight - NAVBAR_HEIGHT },
+                    bounds: calcBounds(),
                     edgeResistance: 0.65,
                     inertia: true,
                     trigger: headerEl || el,
@@ -85,13 +103,25 @@ function WindowWrapper(Component, windowKey) {
                     allowEventDefault: true,
                     onPress: function (e) {
                         focuswindow(windowKey);
-                        // If the press target is inside #window-controls, cancel drag
-                        if (e?.target instanceof Element && e.target.closest('#window-controls')) {
+                        // Prevent dragging when clicking buttons, inputs, controls, tabs, links
+                        if (e?.target instanceof Element && e.target.closest('#window-controls, button, input, select, textarea, a, [data-no-drag="true"]')) {
                             this.endDrag(e);
                             return false;
                         }
                     },
+                    onDragStart: function () {
+                        this.applyBounds(calcBounds());
+                    }
                 });
+
+                const handleResize = () => {
+                    if (draggable) draggable.applyBounds(calcBounds());
+                };
+                window.addEventListener("resize", handleResize);
+
+                return () => {
+                    window.removeEventListener("resize", handleResize);
+                };
             }, el);
 
             return () => ctx.revert();

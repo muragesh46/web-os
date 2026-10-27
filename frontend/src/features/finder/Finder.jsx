@@ -259,16 +259,16 @@ function Finder() {
 
     return (
         <>
-            <div id="window-header" className="bg-gray-100/90 dark:bg-gray-800/90 backdrop-blur rounded-t-lg">
+            <div id="window-header" className="bg-gray-100/90 dark:bg-gray-800/90 backdrop-blur rounded-t-lg shrink-0 select-none">
                 <div id="window-controls">
                     <WindowControls target="finder" />
                 </div>
             </div>
 
-            <div className="flex flex-col h-full bg-white dark:bg-gray-900 relative" ref={finderRef} onContextMenu={handleContextMenu}>
+            <div className="flex flex-col flex-1 min-h-0 bg-white dark:bg-gray-900 relative" ref={finderRef} onContextMenu={handleContextMenu}>
                 <Toolbar />
 
-                <div className="flex flex-1 overflow-hidden h-full">
+                <div className="flex flex-1 min-h-0 overflow-hidden h-full">
                     <Sidebar />
                     <FileGrid onFileContextMenu={handleFileContextMenu} />
                 </div>

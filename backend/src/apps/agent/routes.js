@@ -6,28 +6,46 @@ const { protect } = require('../../middleware/auth.middleware');
 const Conversation = require('./conversation.model');
 const Reminder = require('./reminder.model');
 
-// Fix #4: Shell command allowlist — blocks dangerous system commands
+// Shell command allowlist — strictly safe read-only system diagnostic commands
 const ALLOWED_SHELL_PREFIXES = [
-    'ls', 'pwd', 'echo', 'cat', 'head', 'tail', 'grep', 'find',
+    'ls', 'pwd', 'echo', 'cat', 'head', 'tail', 'grep',
     'df', 'du', 'top', 'ps', 'whoami', 'date', 'uptime', 'uname',
-    'open', 'osascript', 'say', 'curl', 'ping',
+    'say', 'ping',
 ];
 const BLOCKED_SHELL_PATTERNS = [
-    /rm\s+-rf/i, /sudo/i, /chmod/i, /chown/i, /mkfs/i,
+    /rm\b/i, /sudo/i, /chmod/i, /chown/i, /mkfs/i,
     /dd\s+if/i, /:\s*\(\s*\)\s*\{/i, // fork bomb pattern
     />\s*\/dev\/(disk|null)/i,
     /\bkillall\b/i, /\bshutdown\b/i, /\breboot\b/i,
+    /\|\s*(?:bash|sh|zsh|python|node|perl)/i, // pipe to shell
+    /;\s*(?:rm|sudo|curl|wget)/i,
+    /`|\$\(/, // command substitution
 ];
 
 function isShellCommandAllowed(command) {
     const cmd = command.trim().toLowerCase();
-    // Block any dangerous patterns first
     for (const pattern of BLOCKED_SHELL_PATTERNS) {
         if (pattern.test(command)) return false;
     }
-    // Allow only if starts with an approved command
     return ALLOWED_SHELL_PREFIXES.some(prefix => cmd.startsWith(prefix));
 }
+
+const jwt = require('jsonwebtoken');
+const User = require('../auth/user.model');
+
+const optionalAuth = async (req, res, next) => {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            token = req.headers.authorization.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = await User.findById(decoded.id).select('-password');
+        } catch {
+            req.user = null;
+        }
+    }
+    next();
+};
 
 function getUserId(req) {
     try { if (req.user?._id) return req.user._id.toString(); } catch { }
@@ -35,14 +53,15 @@ function getUserId(req) {
 }
 
 // ── AI Chat (tool calling, persistent memory, persona) ────────────────────────
-router.post('/chat', protect, async (req, res) => {
+router.post('/chat', optionalAuth, async (req, res) => {
     try {
-        const { sessionId, message, context, model, provider } = req.body;
+        const { sessionId, message, context, model, provider, apiKey } = req.body;
+        const userApiKey = apiKey || req.headers['x-gemini-key'] || req.query.apiKey || null;
         if (!message?.trim()) return res.status(400).json({ error: 'Message is required' });
         const result = await aiEngine.chat(
             sessionId || 'default', message.trim(),
             { ...context, userName: req.user?.displayName },
-            getUserId(req), model || null, provider
+            getUserId(req), model || null, provider, userApiKey
         );
         res.json(result);
     } catch (error) {
@@ -52,9 +71,10 @@ router.post('/chat', protect, async (req, res) => {
 });
 
 // ── Streaming SSE chat ─────────────────────────────────────────────────────────
-router.post('/stream', protect, async (req, res) => {
+router.post('/stream', optionalAuth, async (req, res) => {
     try {
-        const { sessionId, message, context, model, provider } = req.body;
+        const { sessionId, message, context, model, provider, apiKey } = req.body;
+        const userApiKey = apiKey || req.headers['x-gemini-key'] || req.query.apiKey || null;
         if (!message?.trim()) return res.status(400).json({ error: 'Message is required' });
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
@@ -65,7 +85,8 @@ router.post('/stream', protect, async (req, res) => {
             sessionId || 'default', message.trim(),
             { ...context, userName: req.user?.displayName },
             getUserId(req), model || null, provider,
-            (chunk) => res.write(`data: ${JSON.stringify({ chunk })}\n\n`)
+            (chunk) => res.write(`data: ${JSON.stringify({ chunk })}\n\n`),
+            userApiKey
         );
         res.write('data: [DONE]\n\n');
         res.end();
@@ -76,7 +97,7 @@ router.post('/stream', protect, async (req, res) => {
 });
 
 // ── Vision: analyze attached image ────────────────────────────────────────────
-router.post('/vision', protect, async (req, res) => {
+router.post('/vision', optionalAuth, async (req, res) => {
     try {
         const { imageBase64, mimeType, prompt } = req.body;
         if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });
@@ -90,11 +111,12 @@ router.post('/vision', protect, async (req, res) => {
 });
 
 // ── Simple chat (Ask window) ──────────────────────────────────────────────────
-router.post('/simple-chat', protect, async (req, res) => {
+router.post('/simple-chat', optionalAuth, async (req, res) => {
     try {
-        const { sessionId, message, model } = req.body;
+        const { sessionId, message, model, apiKey } = req.body;
+        const userApiKey = apiKey || req.headers['x-gemini-key'] || req.query.apiKey || null;
         if (!message?.trim()) return res.status(400).json({ error: 'Message is required' });
-        const reply = await aiEngine.simpleChat(sessionId || 'default-ask', message.trim(), getUserId(req), model || null);
+        const reply = await aiEngine.simpleChat(sessionId || 'default-ask', message.trim(), getUserId(req), model || null, userApiKey);
         res.json({ response: reply });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -125,7 +147,7 @@ router.get('/sessions', protect, async (req, res) => {
 });
 
 // ── Clear session ─────────────────────────────────────────────────────────────
-router.post('/clear-session', protect, async (req, res) => {
+router.post('/clear-session', optionalAuth, async (req, res) => {
     await aiEngine.clearSession(req.body.sessionId || 'default', getUserId(req));
     res.json({ success: true });
 });

@@ -2,10 +2,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 const wallpapers = [
-    '/images/wallpaper1.jpg',
-    '/images/wallpaper2.jpg',
-    '/images/wallpaper3.jpg',
-    '/images/wallpaper4.jpg',
+    '/images/wallpaper.png',
+    '/images/wallpaper-neon.jpg',
+    '/images/wallpaper-sunset.jpg',
     '/images/gal1.png',
     '/images/gal2.png',
     '/images/gal3.png',
@@ -34,7 +33,7 @@ const applyThemeClass = (theme) => {
 const useSettingsStore = create(
     persist(
         (set, get) => ({
-            wallpaper: '/images/wallpaper1.jpg',
+            wallpaper: '/images/wallpaper.png',
             theme: 'dark',
             notificationsEnabled: true,
             soundEffectsEnabled: true,
@@ -86,7 +85,7 @@ const useSettingsStore = create(
             clearAllData: () => {
                 localStorage.removeItem('webos-settings');
                 set({
-                    wallpaper: '/images/wallpaper1.jpg',
+                    wallpaper: '/images/wallpaper.png',
                     theme: 'dark',
                     notificationsEnabled: true,
                     soundEffectsEnabled: true,

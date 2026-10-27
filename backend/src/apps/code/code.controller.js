@@ -77,30 +77,65 @@ const executeCode = async (req, res) => {
             return res.status(400).json({ error: `Unsupported language: ${language}` });
     }
 
+    // Safety checks: block dangerous system access and secret inspection
+    const DANGEROUS_PATTERNS = [
+        /process\.env/i,
+        /child_process/i,
+        /\b(?:execSync|spawnSync|fork)\b/i,
+        /\b(?:import\s+os|from\s+os\s+import|import\s+subprocess|import\s+shutil)\b/i,
+        /\bos\.(?:system|popen|spawn|exec|remove|rmdir)\b/i,
+        /\b(?:rm\s+-rf|mkfs|dd\s+if=)\b/i,
+        /:\s*\(\s*\)\s*\{/i, // fork bomb
+        /\b(?:system\s*\(|popen\s*\(|fork\s*\()/i,
+    ];
+
+    for (const pattern of DANGEROUS_PATTERNS) {
+        if (pattern.test(code)) {
+            return res.json({
+                run: {
+                    stdout: '',
+                    stderr: '❌ Security policy violation: System-level calls, process spawning, and environment variable access are restricted.',
+                    code: 1,
+                    signal: null
+                }
+            });
+        }
+    }
+
     const filepath = path.join(TEMP_DIR, filename);
     cleanupFiles.push(filename);
+
+    const cleanup = () => {
+        cleanupFiles.forEach(file => {
+            const fullPath = path.join(TEMP_DIR, file);
+            if (fs.existsSync(fullPath)) {
+                try {
+                    fs.unlinkSync(fullPath);
+                } catch (e) {
+                    // ignore
+                }
+            }
+        });
+    };
 
     try {
         // Write the code to the temp file
         fs.writeFileSync(filepath, code);
 
-        const env = { ...process.env };
+        // Strictly isolated safe environment: do NOT leak process.env (MONGO_URI, JWT_SECRET, etc.)
+        const safeEnv = {
+            PATH: process.env.PATH || '',
+            NODE_PATH: process.env.NODE_PATH || '',
+            LANG: 'en_US.UTF-8',
+            HOME: TEMP_DIR,
+            TMPDIR: TEMP_DIR,
+        };
         const nodeBinDir = path.dirname(process.execPath);
-        env.PATH = nodeBinDir + (process.platform === 'win32' ? ';' : ':') + (env.PATH || '');
+        safeEnv.PATH = nodeBinDir + (process.platform === 'win32' ? ';' : ':') + safeEnv.PATH;
 
         // Execute command inside TEMP_DIR with a 5-second timeout
-        exec(runCommand, { cwd: TEMP_DIR, timeout: 5000, env }, (error, stdout, stderr) => {
-            // Clean up files in the callback
-            cleanupFiles.forEach(file => {
-                const fullPath = path.join(TEMP_DIR, file);
-                if (fs.existsSync(fullPath)) {
-                    try {
-                        fs.unlinkSync(fullPath);
-                    } catch (e) {
-                        console.error(`Failed to delete temp file ${fullPath}:`, e);
-                    }
-                }
-            });
+        exec(runCommand, { cwd: TEMP_DIR, timeout: 5000, env: safeEnv }, (error, stdout, stderr) => {
+            cleanup();
 
             if (error) {
                 if (error.killed) {
@@ -133,15 +168,7 @@ const executeCode = async (req, res) => {
             });
         });
     } catch (err) {
-        // Clean up if compile/write stage failed synchronously
-        cleanupFiles.forEach(file => {
-            const fullPath = path.join(TEMP_DIR, file);
-            if (fs.existsSync(fullPath)) {
-                try {
-                    fs.unlinkSync(fullPath);
-                } catch (e) {}
-            }
-        });
+        cleanup();
         return res.status(500).json({ error: `Failed to execute code: ${err.message}` });
     }
 };

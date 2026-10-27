@@ -24,7 +24,7 @@ function buildSearchIndex() {
         id: 'app-settings',
         label: 'Settings',
         subtitle: 'Application',
-        icon: `/icons/settings.svg`,
+        icon: `/images/settings.png`,
         type: 'app',
         windowKey: 'settings',
     });

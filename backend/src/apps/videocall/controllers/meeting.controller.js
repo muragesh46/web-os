@@ -1,15 +1,12 @@
 const crypto = require("crypto");
 const Meeting = require("../models/meeting");
-const User = require("../models/usermodel");
 
 const addToMeeting = async (req, res) => {
     try {
         const { meetingId } = req.body;
-        // Optionally attach user info using the protect middleware
-        // For now just add meeting logic
         const meeting = new Meeting({
             meetingCode: meetingId,
-            user_id: "anonymous"
+            user_id: req.user?._id ? req.user._id.toString() : "anonymous"
         });
         await meeting.save();
         return res.status(200).json({ message: "Meeting added successfully", meeting });

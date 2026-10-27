@@ -13,6 +13,8 @@ import IncomingCall from "@components/common/IncomingCall.jsx";
 import NotificationBanner from "@features/notifications/NotificationBanner.jsx";
 import useSocketStore from "@store/socket";
 import useSettingsStore from "@store/settings";
+import usewindowstore from "@store/window";
+import useSpotlightStore from "@store/spotlight";
 
 // Fix #6: Lazy-load all app windows — they are heavy and most are never opened.
 // Only mount the component in the DOM the first time a user opens it.
@@ -36,6 +38,7 @@ const SettingsWindow   = React.lazy(() => import('@features/settings/Settings.js
 const CodeIDEWindow    = React.lazy(() => import('@features/code/CodeIDE.jsx'));
 const MusicWindow      = React.lazy(() => import('@features/music/Music.jsx'));
 const CameraWindow     = React.lazy(() => import('@features/camera/Camera.jsx'));
+const AskWindow        = React.lazy(() => import('@features/ask/AskWindow.jsx'));
 
 // Fix #20: ErrorBoundary supports dark mode
 class ErrorBoundary extends React.Component {
@@ -83,8 +86,8 @@ function SplashScreen() {
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-black">
       <div className="flex flex-col items-center gap-4">
-        <img src="/macbook.png" alt="Loading" className="w-16 h-16 animate-pulse opacity-80" />
-        <p className="text-gray-500 text-sm">Loading…</p>
+        <img src="/images/logo.svg" alt="Loading" className="w-16 h-16 animate-pulse opacity-80" />
+        <p className="text-gray-400 text-sm font-medium">Loading Web OS…</p>
       </div>
     </div>
   );
@@ -93,6 +96,34 @@ function SplashScreen() {
 function App() {
   const { user } = useAuthStore();
   const { initSocket, disconnectSockets } = useSocketStore();
+  const windowsState = usewindowstore((s) => s.window);
+  const isSpotlightOpen = useSpotlightStore((s) => s.isOpen);
+
+  // Track windows opened at least once so they mount on-demand and keep their state across minimize/restore
+  const [openedWindows, setOpenedWindows] = React.useState(() => new Set());
+  const [hasOpenedSpotlight, setHasOpenedSpotlight] = React.useState(false);
+
+  React.useEffect(() => {
+    if (windowsState) {
+      setOpenedWindows((prev) => {
+        let updated = false;
+        const next = new Set(prev);
+        for (const [key, win] of Object.entries(windowsState)) {
+          if (win?.isOpen && !next.has(key)) {
+            next.add(key);
+            updated = true;
+          }
+        }
+        return updated ? next : prev;
+      });
+    }
+  }, [windowsState]);
+
+  React.useEffect(() => {
+    if (isSpotlightOpen) {
+      setHasOpenedSpotlight(true);
+    }
+  }, [isSpotlightOpen]);
 
   React.useEffect(() => {
     if (user?.token) {
@@ -124,44 +155,43 @@ function App() {
 
   return (
     <ErrorBoundary>
-      {/* Fix #18: Suspense wraps all lazy windows. SplashScreen shows on initial chunk load. */}
+      {/* Outer suspense handles initial app shell load */}
       <Suspense fallback={<SplashScreen />}>
-        <main className="w-full h-screen relative overflow-hidden">
+        <main id="desktop-main" className="w-full h-screen relative overflow-hidden">
           {!user && <LockScreen />}
           <Navbar></Navbar>
           <Welcome />
           <Dock></Dock>
-          <Launchpad />
-
-          <TerminalWindow />
-
-          <AboutWindow />
-          <ResumeWindow></ResumeWindow>
-          <CalendarWindow />
-          <MapsWindow />
-          <FinderWindow />
-          <TextWindow></TextWindow>
-          <ImageWindow></ImageWindow>
-          <ContactWindow></ContactWindow>
           <Home></Home>
-          <Photos></Photos>
-          <ChatWindow />
-          <VideoCallWindow />
-          <CalculatorWindow />
-          <CodeIDEWindow />
-          <MusicWindow />
-          <CameraWindow />
+
+          {/* Isolated Suspense boundary for on-demand lazy windows so chunk loading doesn't flicker the desktop */}
+          <Suspense fallback={null}>
+            {openedWindows.has('launchpad') && <Launchpad />}
+            {openedWindows.has('terminal') && <TerminalWindow />}
+            {openedWindows.has('about') && <AboutWindow />}
+            {openedWindows.has('resume') && <ResumeWindow />}
+            {openedWindows.has('calander') && <CalendarWindow />}
+            {openedWindows.has('maps') && <MapsWindow />}
+            {openedWindows.has('finder') && <FinderWindow />}
+            {openedWindows.has('txtfile') && <TextWindow />}
+            {openedWindows.has('imgfile') && <ImageWindow />}
+            {openedWindows.has('contact') && <ContactWindow />}
+            {openedWindows.has('photos') && <Photos />}
+            {openedWindows.has('chat') && <ChatWindow />}
+            {openedWindows.has('videocall') && <VideoCallWindow />}
+            {openedWindows.has('calculator') && <CalculatorWindow />}
+            {openedWindows.has('code') && <CodeIDEWindow />}
+            {openedWindows.has('music') && <MusicWindow />}
+            {openedWindows.has('camera') && <CameraWindow />}
+            {openedWindows.has('settings') && <SettingsWindow />}
+            {(openedWindows.has('Ask') || openedWindows.has('ask')) && <AskWindow />}
+            {hasOpenedSpotlight && <SpotlightSearch />}
+            <MAI />
+          </Suspense>
 
           {/* Global Notifications */}
           <IncomingCall />
           <NotificationBanner />
-
-          {/* Global Overlays */}
-          <SpotlightSearch />
-          <MAI />
-
-          {/* App Windows */}
-          <SettingsWindow />
         </main>
       </Suspense>
     </ErrorBoundary>

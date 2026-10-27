@@ -2,7 +2,6 @@ const User = require('./user.model');
 const Finder = require('../finder/finder.model');
 const jwt = require('jsonwebtoken');
 const { asyncHandler, AppError } = require('../../middleware/errorHandler');
-const { validate, authSchemas } = require('../../utils/validation');
 const logger = require('../../utils/logger');
 
 const generateToken = (id) => {

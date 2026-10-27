@@ -9,14 +9,15 @@ const usewindowstore = create(
 
         openwindow: (windowKey, data = null) =>
             set(state => {
-                let win = state.window[windowKey];
+                const key = windowKey === 'ask' ? 'Ask' : windowKey;
+                let win = state.window[key];
                 if (!win) {
                     win = {
                         isOpen: false,
                         zIndex: INITIAL_Z_INDEX,
                         data: null,
                     };
-                    state.window[windowKey] = win;
+                    state.window[key] = win;
                 }
                 win.isOpen = true;
                 win.minimised = false;
@@ -27,7 +28,8 @@ const usewindowstore = create(
 
         closewindow: windowKey =>
             set(state => {
-                const win = state.window[windowKey];
+                const key = windowKey === 'ask' ? 'Ask' : windowKey;
+                const win = state.window[key];
                 if (!win) return;
                 win.isOpen = false;
                 win.zIndex = INITIAL_Z_INDEX;
@@ -36,7 +38,8 @@ const usewindowstore = create(
 
         clearWindowData: windowKey =>
             set(state => {
-                const win = state.window[windowKey];
+                const key = windowKey === 'ask' ? 'Ask' : windowKey;
+                const win = state.window[key];
                 if (win) {
                     win.data = null;
                 }
@@ -44,7 +47,8 @@ const usewindowstore = create(
 
         minimisewindow: windowKey =>
             set(state => {
-                const win = state.window[windowKey];
+                const key = windowKey === 'ask' ? 'Ask' : windowKey;
+                const win = state.window[key];
                 if (!win) return;
 
                 win.minimised = true;
@@ -53,7 +57,8 @@ const usewindowstore = create(
 
         focuswindow: windowKey =>
             set(state => {
-                const win = state.window[windowKey];
+                const key = windowKey === 'ask' ? 'Ask' : windowKey;
+                const win = state.window[key];
                 if (!win) return;
                 win.zIndex = state.nextzindex++;
             })

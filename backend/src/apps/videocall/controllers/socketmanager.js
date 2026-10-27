@@ -88,6 +88,7 @@ const connectToSocket = (io) => {
         socket.on("disconnect", () => {
             console.log(`👋 Socket disconnected: ${socket.id}`);
             delete timeOnline[socket.id];
+            delete userNames[socket.id];
 
             for (const path in connections) {
                 const index = connections[path].indexOf(socket.id);
@@ -101,6 +102,7 @@ const connectToSocket = (io) => {
 
                     if (connections[path].length === 0) {
                         delete connections[path];
+                        delete messages[path];
                     }
                     break; // A socket is usually in only one room
                 }

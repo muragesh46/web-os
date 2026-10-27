@@ -135,7 +135,13 @@ export default function VideoMeetComponent({ onLeave, meetingId, user }) {
                     socket.emit('signal', fromId, { sdp: answer });
                 }
             } else if (data.candidate) {
-                await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+                try {
+                    if (peer.remoteDescription) {
+                        await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+                    }
+                } catch (err) {
+                    console.warn('Could not add ICE candidate:', err);
+                }
             }
         };
 

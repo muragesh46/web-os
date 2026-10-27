@@ -8,6 +8,7 @@ import {
     Copy, RefreshCw, MoreVertical
 } from 'lucide-react';
 import useAgentStore from '@store/agent';
+import usewindowstore from '@store/window';
 import '../../style/MAI.css';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -129,10 +130,15 @@ function SettingsPanel({ store, onClose }) {
     const [name, setName] = useState(store.personaName);
     const [tone, setTone] = useState(store.personaTone);
     const [prompt, setPrompt] = useState(store.personaPrompt);
+    const [geminiKey, setGeminiKey] = useState(store.geminiApiKey || localStorage.getItem('gemini_api_key') || '');
     const [reminderMsg, setReminderMsg] = useState('');
     const [reminderMin, setReminderMin] = useState(5);
 
-    const save = () => { store.setPersona(name, tone, prompt); onClose(); };
+    const save = () => {
+        store.setPersona(name, tone, prompt);
+        store.setGeminiApiKey(geminiKey);
+        onClose();
+    };
     const scheduleReminder = () => {
         if (reminderMsg.trim()) {
             store.scheduleReminder(reminderMsg.trim(), reminderMin * 60000);
@@ -190,6 +196,30 @@ function SettingsPanel({ store, onClose }) {
                             ))}
                         </div>
                     )}
+                </div>
+                {/* Gemini API Key */}
+                <div className="mai-settings-section">
+                    <h4 className="mai-settings-h">Google Gemini API Key</h4>
+                    <label className="mai-settings-label">Gemini API Key</label>
+                    <input
+                        className="mai-settings-input"
+                        type="password"
+                        value={geminiKey}
+                        onChange={e => setGeminiKey(e.target.value)}
+                        placeholder="AIzaSy…"
+                    />
+                    <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                        <button
+                            type="button"
+                            className="mai-settings-btn mai-settings-btn-sm"
+                            onClick={() => {
+                                setGeminiKey('AIzaSyBleqWtfAQ6gGlKhP8rNFcOR2jxDrQrbQo');
+                                store.setGeminiApiKey('AIzaSyBleqWtfAQ6gGlKhP8rNFcOR2jxDrQrbQo');
+                            }}
+                        >
+                            Use Free Default Key
+                        </button>
+                    </div>
                 </div>
                 {/* Quota */}
                 {store.ollamaLoad && (
@@ -434,11 +464,11 @@ const MAI = () => {
                     </div>
                 </div>
 
-                {/* Offline banner (inline) */}
-                {aiStatus === 'error' && (
-                    <div className="mai-offline-banner-inline">
+                {/* Offline / Gemini Key Banner */}
+                {!store.geminiApiKey && !localStorage.getItem('gemini_api_key') && (
+                    <div className="mai-offline-banner-inline" style={{ cursor: 'pointer' }} onClick={() => usewindowstore.getState().openwindow('Ask')}>
                         <AlertCircle size={12} />
-                        <span>Ollama is not running — start it with <code>ollama serve</code></span>
+                        <span>Gemini API Key needed — click here to activate Ask AI</span>
                     </div>
                 )}
 
@@ -525,7 +555,9 @@ const MAI = () => {
 
             {/* Floating orb */}
             <div id="agent-orb" className={`agent-orb ${isListening ? 'agent-orb-listening' : ''} ${isBusy ? 'agent-orb-processing' : ''} ${isExpanded ? 'agent-orb-active' : ''}`}
-                onClick={() => setExpanded(!isExpanded)} title="MAI (Cmd+Shift+A)">
+                onClick={() => {
+                    usewindowstore.getState().openwindow("Ask");
+                }} title="Ask AI (Google Gemini)">
                 <img src="/images/Ask.png" alt="AI" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
             </div>
         </div>

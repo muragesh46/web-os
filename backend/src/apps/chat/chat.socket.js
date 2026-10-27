@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../auth/user.model');
 const Message = require('./message.model');
 
-// Map: userId -> socketId
+// Map: userId -> Set<socketId>
 const onlineUsers = new Map();
 
 function initChatSocket(io) {
@@ -25,10 +25,17 @@ function initChatSocket(io) {
 
     io.on('connection', async (socket) => {
         const userId = socket.user._id.toString();
-        console.log(`💬 Chat: ${socket.user.displayName} connected`);
+        console.log(`💬 Chat: ${socket.user.displayName} connected (${socket.id})`);
 
-        // Track online status
-        onlineUsers.set(userId, socket.id);
+        // Join user room for multi-device/multi-tab delivery
+        socket.join(userId);
+
+        // Track online status with Set of sockets
+        if (!onlineUsers.has(userId)) {
+            onlineUsers.set(userId, new Set());
+        }
+        onlineUsers.get(userId).add(socket.id);
+
         await User.findByIdAndUpdate(userId, { isOnline: true });
 
         // Broadcast online users list
@@ -52,14 +59,11 @@ function initChatSocket(io) {
                     { path: 'receiver', select: 'displayName fullName email' },
                 ]);
 
-                // Send to receiver if online
-                const receiverSocketId = onlineUsers.get(receiverId);
-                if (receiverSocketId) {
-                    io.to(receiverSocketId).emit('new-message', populated);
-                }
+                // Send to receiver room (all receiver tabs)
+                io.to(receiverId).emit('new-message', populated);
 
-                // Confirm to sender
-                socket.emit('message-sent', populated);
+                // Confirm to sender room (all sender tabs)
+                io.to(userId).emit('message-sent', populated);
             } catch (err) {
                 console.error('Send message error:', err);
                 socket.emit('message-error', { error: 'Failed to send message' });
@@ -68,38 +72,35 @@ function initChatSocket(io) {
 
         // Handle typing indicator
         socket.on('typing', (receiverId) => {
-            const receiverSocketId = onlineUsers.get(receiverId);
-            if (receiverSocketId) {
-                io.to(receiverSocketId).emit('user-typing', userId);
-            }
+            io.to(receiverId).emit('user-typing', userId);
         });
 
         socket.on('stop-typing', (receiverId) => {
-            const receiverSocketId = onlineUsers.get(receiverId);
-            if (receiverSocketId) {
-                io.to(receiverSocketId).emit('user-stop-typing', userId);
-            }
+            io.to(receiverId).emit('user-stop-typing', userId);
         });
 
         // Handle Video Call Signaling
         socket.on('call-user', (data) => {
             const { receiverId, meetingId } = data;
-            const receiverSocketId = onlineUsers.get(receiverId);
-            if (receiverSocketId) {
-                console.log(`📞 RELAY: Call from ${socket.user.displayName} to user ${receiverId}`);
-                io.to(receiverSocketId).emit('incoming-call', {
-                    callerId: userId,
-                    callerName: socket.user.displayName,
-                    meetingId
-                });
-            }
+            console.log(`📞 RELAY: Call from ${socket.user.displayName} to user ${receiverId}`);
+            io.to(receiverId).emit('incoming-call', {
+                callerId: userId,
+                callerName: socket.user.displayName,
+                meetingId
+            });
         });
 
         // Handle disconnect
         socket.on('disconnect', async () => {
-            console.log(`💬 Chat: ${socket.user.displayName} disconnected`);
-            onlineUsers.delete(userId);
-            await User.findByIdAndUpdate(userId, { isOnline: false });
+            console.log(`💬 Chat: ${socket.user.displayName} disconnected (${socket.id})`);
+            const userSockets = onlineUsers.get(userId);
+            if (userSockets) {
+                userSockets.delete(socket.id);
+                if (userSockets.size === 0) {
+                    onlineUsers.delete(userId);
+                    await User.findByIdAndUpdate(userId, { isOnline: false });
+                }
+            }
             io.emit('online-users', Array.from(onlineUsers.keys()));
         });
     });

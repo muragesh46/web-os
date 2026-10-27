@@ -8,8 +8,10 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false, // For simplicity in our hybrid app right now
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.cjs'),
+      sandbox: true,
     },
     titleBarStyle: 'hiddenInset', // Makes it look like a native Mac app
   });

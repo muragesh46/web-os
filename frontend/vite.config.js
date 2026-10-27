@@ -17,6 +17,9 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 1600, // Suppress chunk size warnings
+    rollupOptions: {
+      maxParallelFileOps: 50,
+    },
   },
   resolve: {
     alias: {

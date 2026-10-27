@@ -76,6 +76,23 @@ const useAuthStore = create((set) => ({
         }
     },
 
+    loginGuest: () => {
+        const guestUser = {
+            _id: 'guest-visitor-id',
+            fullName: 'Guest Explorer',
+            displayName: 'Guest',
+            email: 'guest@webos.portfolio',
+            isGuest: true,
+            token: 'guest-portfolio-demo-token',
+        };
+        try {
+            localStorage.setItem('user', JSON.stringify(guestUser));
+        } catch (e) {
+            // ignore
+        }
+        set({ user: guestUser, isSuccess: true, isLoading: false, isError: false, message: '' });
+    },
+
     logout: () => {
         authService.logout();
         set({ user: null });

@@ -78,12 +78,22 @@ const CameraApp = () => {
     const saveRecentCaptures = useCallback((nextCaptures) => {
         const persistentPhotos = nextCaptures
             .filter((capture) => capture.type === "photo")
-            .slice(0, MAX_RECENT_CAPTURES);
+            .slice(0, 3); // Limit to at most 3 to prevent exceeding 5MB browser quota
 
         try {
             localStorage.setItem(LOCAL_CAPTURE_KEY, JSON.stringify(persistentPhotos));
         } catch (error) {
-            console.warn("Camera capture history is full, keeping this session only:", error);
+            console.warn("Camera storage quota reached, trimming local cache:", error);
+            try {
+                // Try keeping only the single newest capture
+                if (persistentPhotos.length > 1) {
+                    localStorage.setItem(LOCAL_CAPTURE_KEY, JSON.stringify([persistentPhotos[0]]));
+                } else {
+                    localStorage.removeItem(LOCAL_CAPTURE_KEY);
+                }
+            } catch {
+                localStorage.removeItem(LOCAL_CAPTURE_KEY);
+            }
         }
     }, []);
 
@@ -337,8 +347,10 @@ const CameraApp = () => {
 
     return (
         <div id="camera" className="w-full h-full flex flex-col select-none bg-[#f7f7f8] text-gray-900 dark:bg-[#111214] dark:text-gray-100">
-            <div id="window-header" className="flex items-center justify-between px-4 py-3 border-b border-gray-200/80 bg-white/85 backdrop-blur-xl dark:border-gray-800 dark:bg-[#17181b]/90">
-                <WindowControls target="camera" />
+            <div id="window-header" className="flex items-center justify-between px-4 py-3 border-b border-gray-200/80 bg-white/85 backdrop-blur-xl dark:border-gray-800 dark:bg-[#17181b]/90 shrink-0 select-none">
+                <div id="window-controls">
+                    <WindowControls target="camera" />
+                </div>
                 <div className="flex items-center gap-2 text-sm font-semibold">
                     <Camera size={17} className="text-gray-700 dark:text-gray-200" />
                     <span>Camera</span>

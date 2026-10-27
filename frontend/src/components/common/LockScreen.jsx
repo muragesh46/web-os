@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useAuthStore from '@store/auth';
-import { User, Mail, Lock, UserCircle, LogIn, UserPlus } from 'lucide-react';
+import { User, Mail, Lock, UserCircle, LogIn, UserPlus, Sparkles } from 'lucide-react';
 import '@style/auth.css';
 
 function LockScreen() {
@@ -12,7 +12,7 @@ function LockScreen() {
         password: '',
     });
 
-    const { register, login, isLoading, isError, message, isSuccess, reset } = useAuthStore();
+    const { register, login, loginGuest, isLoading, isError, message, isSuccess, reset } = useAuthStore();
 
     useEffect(() => {
         reset();
@@ -122,6 +122,21 @@ function LockScreen() {
                         ) : (
                             <> <UserPlus className="w-5 h-5" /> Sign Up </>
                         )}
+                    </button>
+
+                    <div className="flex items-center gap-2 my-1 w-full opacity-70">
+                        <div className="h-px bg-white/30 flex-1"></div>
+                        <span className="text-[11px] text-white/80 uppercase tracking-wider font-semibold">or explore directly</span>
+                        <div className="h-px bg-white/30 flex-1"></div>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() => loginGuest()}
+                        className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600/90 to-purple-600/90 hover:from-blue-500 hover:to-purple-500 text-white font-medium text-sm flex items-center justify-center gap-2 border border-white/20 backdrop-blur-md transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] shadow-lg cursor-pointer"
+                    >
+                        <Sparkles className="w-4 h-4 text-amber-300" />
+                        Explore as Guest (No Sign In Needed)
                     </button>
                 </form>
 

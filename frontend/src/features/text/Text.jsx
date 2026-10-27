@@ -11,13 +11,15 @@ const Text = () => {
     const description = data?.description;
 
     return (
-        <div>
-            <div id="window-header">
-                <WindowControls target="txtfile" />
+        <div className="flex flex-col h-full">
+            <div id="window-header" className="shrink-0 select-none">
+                <div id="window-controls">
+                    <WindowControls target="txtfile" />
+                </div>
                 <h2>{name}</h2>
             </div>
 
-            <div className="p-6 bg-white dark:bg-gray-900">
+            <div className="p-6 bg-white dark:bg-gray-900 overflow-y-auto max-h-[75vh]">
                 {image ? (
                     <div className="flex gap-6">
                         {/* Image Column - Left Side */}

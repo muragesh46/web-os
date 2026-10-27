@@ -23,7 +23,7 @@ function CalendarWindow() {
                 <div id="window-controls">
                     <WindowControls target="calander" />
                 </div>
-                <h2 className="flex-1 text-center">Calander</h2>
+                <h2 className="flex-1 text-center font-semibold">Calendar</h2>
                 <div className="w-[52px]"></div>
             </div>
             <div className="calendar-content">

@@ -632,12 +632,12 @@ const Settings = () => {
                 </aside>
 
                 {/* Main */}
-                <main
+                <div
                     className="settings-main"
                     key={activeTab}
                 >
                     {renderContent()}
-                </main>
+                </div>
             </div>
         </div>
     );

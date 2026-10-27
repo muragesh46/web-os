@@ -14,22 +14,22 @@ const About = () => {
     ];
 
     return (
-        <div>
-            <div id="window-header">
+        <div className="flex flex-col h-full">
+            <div id="window-header" className="shrink-0">
                 <div id="window-controls">
                     <WindowControls target="about" />
                 </div>
                 <h2>{name}</h2>
             </div>
 
-            <div className="p-6 bg-white dark:bg-gray-900">
-                <div className="flex gap-6">
+            <div className="p-6 bg-white dark:bg-gray-900 overflow-y-auto max-h-[75vh]">
+                <div className="flex flex-col md:flex-row gap-6">
                     {/* Image Column - Left Side */}
-                    <div className="w-2/5 flex-shrink-0">
+                    <div className="w-full md:w-2/5 flex-shrink-0 flex justify-center items-start">
                         <img
                             src={image}
                             alt={name}
-                            className="w-full h-auto rounded-xl shadow-lg object-cover"
+                            className="w-48 md:w-full h-auto max-h-[320px] rounded-xl shadow-lg object-cover"
                         />
                     </div>
 

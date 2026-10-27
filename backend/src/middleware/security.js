@@ -37,17 +37,27 @@ const sanitizeData = (req, res, next) => {
 };
 
 // Data sanitization against XSS attacks (Express 5 compatible)
-const cleanValue = (value) => {
+// Strips active script injection, iframes, and javascript: links without corrupting innocent text, code, or passwords
+const SENSITIVE_FIELDS = new Set(['password', 'code', 'token', 'key', 'imageBase64']);
+
+const cleanValue = (value, fieldName = '') => {
+  if (SENSITIVE_FIELDS.has(fieldName)) {
+    return value;
+  }
   if (typeof value === 'string') {
-    return value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return value
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/javascript\s*:/gi, '')
+      .replace(/vbscript\s*:/gi, '')
+      .replace(/on\w+\s*=\s*(['"]).*?\1/gi, '');
   }
   if (Array.isArray(value)) {
-    return value.map(cleanValue);
+    return value.map((v) => cleanValue(v, fieldName));
   }
   if (value !== null && typeof value === 'object') {
     const cleanObj = {};
     for (const key in value) {
-      cleanObj[key] = cleanValue(value[key]);
+      cleanObj[key] = cleanValue(value[key], key);
     }
     return cleanObj;
   }
@@ -55,46 +65,24 @@ const cleanValue = (value) => {
 };
 
 const sanitizeXss = (req, res, next) => {
-  const rawCode =
-    req.path === '/api/code/execute' && req.body && typeof req.body.code === 'string'
-      ? req.body.code
-      : null;
-
-  if (req.body) {
+  if (req.body && typeof req.body === 'object') {
     req.body = cleanValue(req.body);
-    if (rawCode !== null) {
-      req.body.code = rawCode;
-    }
   }
   if (req.query) {
-    // In Express 5, req.query is getter-only. Mutate properties instead of reassigning the query object.
     for (const key in req.query) {
-      req.query[key] = cleanValue(req.query[key]);
+      req.query[key] = cleanValue(req.query[key], key);
     }
   }
   if (req.params) {
     for (const key in req.params) {
-      req.params[key] = cleanValue(req.params[key]);
+      req.params[key] = cleanValue(req.params[key], key);
     }
   }
   next();
 };
 
-// CSRF Token middleware
-const csrf = require('csurf');
-const cookieParser = require('cookie-parser');
-
-const csrfProtection = csrf({
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  },
-});
-
 module.exports = {
   helmetConfig,
   sanitizeData,
   sanitizeXss,
-  csrfProtection,
 };

@@ -108,7 +108,7 @@ function Dock() {
         onClick={() => toggleApp({ id, canOpen, window: win })}
       >
         <img
-          src={icon ? `/images/${icon}` : "/icons/app.svg"}
+          src={icon ? `/images/${icon}` : "/images/m.png"}
           className={canOpen ? "" : "opacity-60"}
           alt={name}
           loading="lazy"

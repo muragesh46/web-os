@@ -11,8 +11,10 @@ const { errorHandler } = require('./middleware/errorHandler');
 const { helmetConfig, sanitizeData, sanitizeXss } = require('./middleware/security');
 const { setupSwagger } = require('./config/swagger');
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB when not in test
+if (process.env.NODE_ENV !== 'test') {
+  connectDB();
+}
 
 const app = express();
 const server = http.createServer(app);

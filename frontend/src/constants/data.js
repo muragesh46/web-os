@@ -47,6 +47,13 @@ const dockApps = [
         icon: "finder.png",
         canOpen: true,
     },
+    {
+        id: "Ask",
+        name: "Ask AI",
+        icon: "Ask.png",
+        canOpen: true,
+        window: "Ask",
+    },
 
     {
         id: "photos",
@@ -552,6 +559,7 @@ const WINDOW_CONFIG = {
     contact: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     resume: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     Ask: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+    ask: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     photos: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     terminal: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
     txtfile: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },

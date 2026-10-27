@@ -88,6 +88,7 @@ const useAgentStore = create(
             // ── Settings (persisted) ─────────────────────────────────────
             selectedModel: null,
             aiProvider: 'Cloud',
+            geminiApiKey: localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '',
             ttsEnabled: false,
             selectedVoiceURI: null,
             useStreaming: true,
@@ -119,6 +120,15 @@ const useAgentStore = create(
             setInputMode: v => set({ inputMode: v }),
             setSelectedModel: v => set({ selectedModel: v }),
             setAiProvider: v => set({ aiProvider: v }),
+            setGeminiApiKey: (key) => {
+                const cleaned = (key || '').trim();
+                if (cleaned) {
+                    localStorage.setItem('gemini_api_key', cleaned);
+                } else {
+                    localStorage.removeItem('gemini_api_key');
+                }
+                set({ geminiApiKey: cleaned });
+            },
             setTtsEnabled: v => set({ ttsEnabled: v }),
             setSelectedVoiceURI: v => set({ selectedVoiceURI: v }),
             setUseStreaming: v => set({ useStreaming: v }),
@@ -344,7 +354,8 @@ const useAgentStore = create(
 
             // ── Stream processing ─────────────────────────────────────────
             _processStream: async (text, context) => {
-                const { selectedModel, aiProvider, currentSessionId } = get();
+                const { selectedModel, aiProvider, currentSessionId, geminiApiKey } = get();
+                const key = geminiApiKey || localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
                 set({ isStreaming: true, streamingText: '', isProcessing: true });
                 set(state => ({
                     conversationHistory: [...state.conversationHistory, { role: 'agent', content: '', timestamp: new Date(), isStreaming: true }]
@@ -354,8 +365,20 @@ const useAgentStore = create(
                     const response = await fetch(`${API_BASE_URL}/api/agent/stream`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-                        body: JSON.stringify({ sessionId: currentSessionId, message: text, context, model: selectedModel || undefined, provider: aiProvider }),
+                        body: JSON.stringify({
+                            sessionId: currentSessionId,
+                            message: text,
+                            context,
+                            model: selectedModel || undefined,
+                            provider: aiProvider,
+                            apiKey: key || undefined,
+                        }),
                     });
+
+                    if (!response.ok) {
+                        throw new Error(`Server returned status ${response.status}`);
+                    }
+
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
                     while (true) {
@@ -389,7 +412,31 @@ const useAgentStore = create(
                             } catch { }
                         }
                     }
-                } catch (err) { fullText = `Stream error: ${err.message}`; }
+                } catch (err) {
+                    console.warn('[Agent] Stream failed, attempting direct Gemini fallback:', err.message);
+                    if (key) {
+                        try {
+                            const candidateModels = ['gemini-2.5-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+                            for (const model of candidateModels) {
+                                const directRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        contents: [{ role: 'user', parts: [{ text }] }],
+                                    }),
+                                });
+                                if (directRes.ok) {
+                                    const data = await directRes.json();
+                                    fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                                    if (fullText) break;
+                                }
+                            }
+                        } catch (directErr) {
+                            fullText = `AI error: ${directErr.message}`;
+                        }
+                    }
+                    if (!fullText) fullText = `AI error: ${err.message}. Please check your Gemini API key.`;
+                }
 
                 set(state => {
                     const history = [...state.conversationHistory];
@@ -410,7 +457,8 @@ const useAgentStore = create(
             // options.extraContext — merged into Web OS context (e.g. Code IDE)
             processCommand: async (text, options = {}) => {
                 const { apiMessage, extraContext = {} } = options;
-                const { useStreaming, selectedModel, aiProvider, attachedImage, personaName, personaTone, personaPrompt, currentSessionId } = get();
+                const { useStreaming, selectedModel, aiProvider, attachedImage, personaName, personaTone, personaPrompt, currentSessionId, geminiApiKey } = get();
+                const key = geminiApiKey || localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
                 set({ isProcessing: true, response: '', error: null, attachedImage: null });
 
                 let messageText = apiMessage || text;
@@ -437,7 +485,7 @@ const useAgentStore = create(
 
                 try {
                     const res = await axios.post(`${API_BASE_URL}/api/agent/chat`, {
-                        sessionId: currentSessionId, message: messageText, context, model: selectedModel || undefined, provider: aiProvider,
+                        sessionId: currentSessionId, message: messageText, context, model: selectedModel || undefined, provider: aiProvider, apiKey: key || undefined,
                     }, { headers: getAuthHeader() });
 
                     const { response: aiResponse, toolCalls, webosActions } = res.data;
@@ -463,6 +511,38 @@ const useAgentStore = create(
                     if (get().ttsEnabled) speakText(aiResponse, get().selectedVoiceURI);
                     return aiResponse;
                 } catch (error) {
+                    console.warn('[Agent] Chat error, attempting direct Gemini fallback:', error.message);
+                    let directReply = '';
+                    if (key) {
+                        try {
+                            const candidateModels = ['gemini-2.5-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+                            for (const model of candidateModels) {
+                                const directRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        contents: [{ role: 'user', parts: [{ text: messageText }] }],
+                                    }),
+                                });
+                                if (directRes.ok) {
+                                    const data = await directRes.json();
+                                    directReply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                                    if (directReply) break;
+                                }
+                            }
+                        } catch {}
+                    }
+
+                    if (directReply) {
+                        set(state => ({
+                            response: directReply, isProcessing: false,
+                            conversationHistory: [...state.conversationHistory, { role: 'agent', content: directReply, timestamp: new Date() }],
+                            usageStats: { ...state.usageStats, messageCount: state.usageStats.messageCount + 1 },
+                        }));
+                        if (get().ttsEnabled) speakText(directReply, get().selectedVoiceURI);
+                        return directReply;
+                    }
+
                     const errMsg = error.response?.data?.hint
                         ? `${error.response.data.error}. ${error.response.data.hint}`
                         : error.response?.data?.error || (error.message?.includes('Network Error') ? "Can't reach the backend." : `Error: ${error.message}`);
@@ -485,6 +565,7 @@ const useAgentStore = create(
                 personaTone: state.personaTone,
                 personaPrompt: state.personaPrompt,
                 aiProvider: state.aiProvider,
+                geminiApiKey: state.geminiApiKey,
                 // Fix #12: persist conversation for guests (unauthenticated sessions)
                 // Cap at 50 messages to keep localStorage manageable
                 conversationHistory: state.conversationHistory.slice(-50),
