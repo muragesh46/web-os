@@ -29,27 +29,24 @@ const getUsers = async (req, res) => {
 const searchUsers = async (req, res) => {
     try {
         const { query } = req.query;
-        if (!query) {
-            return res.json([]);
-        }
 
         const currentUser = await User.findById(req.user._id);
         const contactIds = (currentUser && currentUser.contacts) ? currentUser.contacts : [];
         const validContactIds = contactIds.filter(id => id != null);
 
-        const users = await User.find({
-            $and: [
-                { _id: { $ne: req.user._id } }, // Not me
-                { _id: { $nin: validContactIds } },  // Not already a contact
-                {
-                    $or: [
-                        { displayName: { $regex: query, $options: 'i' } },
-                        { email: { $regex: query, $options: 'i' } },
-                        { fullName: { $regex: query, $options: 'i' } }
-                    ]
-                }
-            ]
-        })
+        const filter = {
+            _id: { $ne: req.user._id, $nin: validContactIds }
+        };
+
+        if (query && query.trim()) {
+            filter.$or = [
+                { displayName: { $regex: query.trim(), $options: 'i' } },
+                { email: { $regex: query.trim(), $options: 'i' } },
+                { fullName: { $regex: query.trim(), $options: 'i' } }
+            ];
+        }
+
+        const users = await User.find(filter)
             .select('fullName displayName email isOnline')
             .limit(10);
 

@@ -126,7 +126,53 @@ const loginUser = async (req, res) => {
     }
 };
 
+// @desc    Guest Login / Quick demo session
+// @route   POST /api/auth/guest
+// @access  Public
+const guestLogin = async (req, res) => {
+    try {
+        const guestSuffix = Math.floor(100 + Math.random() * 900);
+        const guestName = req.body?.name || `Guest_${guestSuffix}`;
+        const guestEmail = `guest_${Date.now()}_${guestSuffix}@webos.system`;
+
+        const guestUser = await User.create({
+            fullName: guestName,
+            displayName: guestName,
+            email: guestEmail,
+            password: 'GuestPassword123!',
+            isOnline: true,
+        });
+
+        // Add existing users to contacts so guest can immediately chat and video call
+        const existingUsers = await User.find({ _id: { $ne: guestUser._id } }).limit(10);
+        if (existingUsers.length > 0) {
+            guestUser.contacts = existingUsers.map((u) => u._id);
+            await guestUser.save();
+
+            for (const other of existingUsers) {
+                if (!other.contacts) other.contacts = [];
+                if (!other.contacts.includes(guestUser._id)) {
+                    other.contacts.push(guestUser._id);
+                    await other.save();
+                }
+            }
+        }
+
+        res.json({
+            _id: guestUser._id,
+            fullName: guestUser.fullName,
+            displayName: guestUser.displayName,
+            email: guestUser.email,
+            isGuest: true,
+            token: generateToken(guestUser._id),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
+    guestLogin,
 };

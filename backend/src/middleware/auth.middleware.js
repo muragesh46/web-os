@@ -11,6 +11,21 @@ const protect = async (req, res, next) => {
         try {
             token = req.headers.authorization.split(' ')[1];
 
+            if (token === 'guest-portfolio-demo-token') {
+                let guestUser = await User.findOne({ email: 'guest@webos.system' });
+                if (!guestUser) {
+                    guestUser = await User.create({
+                        fullName: 'Guest Explorer',
+                        displayName: 'Guest',
+                        email: 'guest@webos.system',
+                        password: 'GuestPassword123!',
+                        isOnline: true
+                    });
+                }
+                req.user = guestUser;
+                return next();
+            }
+
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
             req.user = await User.findById(decoded.id).select('-password');

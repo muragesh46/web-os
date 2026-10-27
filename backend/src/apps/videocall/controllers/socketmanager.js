@@ -3,12 +3,32 @@ const timeOnline = {};
 const messages = {};
 const userNames = {};
 
+const removeSocketFromRooms = (io, socketId) => {
+    delete timeOnline[socketId];
+    delete userNames[socketId];
+
+    for (const path in connections) {
+        const index = connections[path].indexOf(socketId);
+        if (index !== -1) {
+            connections[path].splice(index, 1);
+            console.log(`👋 Socket ${socketId} removed from room ${path}, remaining:`, connections[path].length);
+
+            // Notify remaining participants
+            connections[path].forEach(sid => {
+                io.to(sid).emit('user-left', socketId);
+            });
+
+            if (connections[path].length === 0) {
+                delete connections[path];
+                delete messages[path];
+            }
+        }
+    }
+};
+
 const connectToSocket = (io) => {
-
-
     io.on("connection", (socket) => {
-
-        console.log("SOMETHING CONNECTED")
+        console.log(`🔌 Video socket connected: ${socket.id}`);
 
         socket.on("join-call", (data) => {
             let path;
@@ -21,99 +41,90 @@ const connectToSocket = (io) => {
                 path = data;
             }
 
+            if (!path) return;
+
+            // Remove socket from any prior rooms before joining a new one
+            removeSocketFromRooms(io, socket.id);
+
             userNames[socket.id] = userName;
-
-            if (connections[path] === undefined) {
-                connections[path] = []
-            }
-            if (!connections[path].includes(socket.id)) {
-                connections[path].push(socket.id)
-            }
-
             timeOnline[socket.id] = new Date();
 
+            if (!connections[path]) {
+                connections[path] = [];
+            }
+            if (!connections[path].includes(socket.id)) {
+                connections[path].push(socket.id);
+            }
+
+            console.log(`📹 User "${userName}" (${socket.id}) joined room "${path}". Total users in room:`, connections[path].length);
+
             // Send full list of current users to the new joiner
-            const roomUserInfo = connections[path].map(id => ({ id, name: userNames[id] }));
+            const roomUserInfo = connections[path].map(id => ({ id, name: userNames[id] || 'Participant' }));
             socket.emit("room-users", roomUserInfo);
 
-            // Notify everyone else that this user joined
+            // Notify everyone else in the room that this user joined
             connections[path].forEach(socketId => {
                 if (socketId !== socket.id) {
                     io.to(socketId).emit("user-joined", socket.id, userName);
                 }
             });
 
-            if (messages[path] !== undefined) {
-                for (let a = 0; a < messages[path].length; ++a) {
-                    io.to(socket.id).emit("chat-message", messages[path][a]['data'],
-                        messages[path][a]['sender'], messages[path][a]['socket-id-sender'])
-                }
-            }
-
-        })
-
-        socket.on("signal", (toId, message) => {
-            io.to(toId).emit("signal", socket.id, message);
-        })
-
-        socket.on("chat-message", (data, sender) => {
-
-            const [matchingRoom, found] = Object.entries(connections)
-                .reduce(([room, isFound], [roomKey, roomValue]) => {
-
-
-                    if (!isFound && roomValue.includes(socket.id)) {
-                        return [roomKey, true];
-                    }
-
-                    return [room, isFound];
-
-                }, ['', false]);
-
-            if (found === true) {
-                if (messages[matchingRoom] === undefined) {
-                    messages[matchingRoom] = []
-                }
-
-                messages[matchingRoom].push({ 'sender': sender, "data": data, "socket-id-sender": socket.id })
-                console.log("message", matchingRoom, ":", sender, data)
-
-                connections[matchingRoom].forEach((elem) => {
-                    io.to(elem).emit("chat-message", data, sender, socket.id)
-                })
-            }
-
-        })
-
-        socket.on("disconnect", () => {
-            console.log(`👋 Socket disconnected: ${socket.id}`);
-            delete timeOnline[socket.id];
-            delete userNames[socket.id];
-
-            for (const path in connections) {
-                const index = connections[path].indexOf(socket.id);
-                if (index !== -1) {
-                    connections[path].splice(index, 1);
-
-                    // Notify others in the room
-                    connections[path].forEach(socketId => {
-                        io.to(socketId).emit('user-left', socket.id);
-                    });
-
-                    if (connections[path].length === 0) {
-                        delete connections[path];
-                        delete messages[path];
-                    }
-                    break; // A socket is usually in only one room
-                }
+            // Send room message history to the new joiner
+            if (messages[path] && messages[path].length > 0) {
+                messages[path].forEach(m => {
+                    socket.emit("chat-message", m.data, m.sender, m['socket-id-sender']);
+                });
             }
         });
 
+        socket.on("signal", (toId, message) => {
+            if (toId) {
+                io.to(toId).emit("signal", socket.id, message);
+            }
+        });
 
-    })
+        socket.on("chat-message", (data, sender, targetPath) => {
+            let matchingRoom = targetPath;
+            if (!matchingRoom || !connections[matchingRoom]?.includes(socket.id)) {
+                for (const [roomKey, roomValue] of Object.entries(connections)) {
+                    if (roomValue.includes(socket.id)) {
+                        matchingRoom = roomKey;
+                        break;
+                    }
+                }
+            }
 
+            if (matchingRoom && connections[matchingRoom]) {
+                if (!messages[matchingRoom]) {
+                    messages[matchingRoom] = [];
+                }
+
+                messages[matchingRoom].push({
+                    sender: sender || userNames[socket.id] || 'Participant',
+                    data,
+                    'socket-id-sender': socket.id
+                });
+
+                console.log(`💬 In-call chat [${matchingRoom}] from ${sender}: ${data}`);
+
+                connections[matchingRoom].forEach((elem) => {
+                    io.to(elem).emit("chat-message", data, sender || userNames[socket.id] || 'Participant', socket.id);
+                });
+            }
+        });
+
+        socket.on("leave-call", () => {
+            console.log(`🚪 User requested leave-call: ${socket.id}`);
+            removeSocketFromRooms(io, socket.id);
+        });
+
+        socket.on("disconnect", () => {
+            console.log(`👋 Video socket disconnected: ${socket.id}`);
+            removeSocketFromRooms(io, socket.id);
+        });
+    });
 
     return io;
-}
+};
 
 module.exports = { connectToSocket };

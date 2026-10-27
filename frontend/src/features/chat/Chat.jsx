@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { io } from 'socket.io-client';
-import { Plus, Search, Video, UserPlus, X, LogIn, MessageSquare } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Plus, Search, Video, UserPlus, X, MessageSquare, Check, CheckCheck } from 'lucide-react';
 import withWindow from '@hoc/WindowWrapper.jsx';
 import WindowControls from '@components/common/WindowControl.jsx';
 import useAuthStore from '@store/auth';
@@ -8,8 +7,6 @@ import usewindowstore from '@store/window.js';
 import useSocketStore from '@store/socket';
 import chatService from '@services/chat.service.js';
 import LockScreen from '@components/common/LockScreen.jsx';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || (import.meta.env.PROD ? '' : 'http://localhost:3001');
 
 function Chat() {
     const { user } = useAuthStore();
@@ -19,6 +16,9 @@ function Chat() {
 
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
+    const selectedUserRef = useRef(null);
+    selectedUserRef.current = selectedUser;
+
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [unread, setUnread] = useState({});
@@ -39,61 +39,112 @@ function Chat() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, []);
 
-    useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
-
-    // Listen for socket events
     useEffect(() => {
-        if (!isOpen || !socket) return;
+        scrollToBottom();
+    }, [messages, typing, scrollToBottom]);
+
+    // Initial load of contacts & unread counts
+    const refreshContacts = useCallback(() => {
+        chatService.getUsers().then(setUsers).catch(console.error);
+        chatService.getUnreadCounts().then(setUnread).catch(console.error);
+    }, []);
+
+    useEffect(() => {
+        if (!user) return;
+        refreshContacts();
+    }, [user, refreshContacts]);
+
+    // Stable socket listener lifecycle
+    useEffect(() => {
+        if (!socket) return;
 
         const handleNewMessage = (msg) => {
-            setMessages((prev) => {
-                if (
-                    msg.sender._id === selectedUser?._id ||
-                    msg.receiver._id === selectedUser?._id
-                ) {
-                    return [...prev, msg];
+            const currentSelected = selectedUserRef.current;
+            const senderId = msg.sender?._id || msg.sender;
+            const receiverId = msg.receiver?._id || msg.receiver;
+            const currentId = currentSelected?._id;
+
+            const isCurrentConversation =
+                senderId?.toString() === currentId?.toString() ||
+                receiverId?.toString() === currentId?.toString();
+
+            if (isCurrentConversation) {
+                setMessages((prev) => {
+                    // Filter out optimistic message if it matches text
+                    const filtered = prev.filter(m => !m._isPending || m.text !== msg.text);
+                    if (filtered.some(m => m._id && m._id === msg._id)) return filtered;
+                    return [...filtered, msg];
+                });
+
+                // Clear unread if we are actively viewing this user
+                if (senderId?.toString() === currentId?.toString()) {
+                    chatService.getMessages(currentId).catch(() => {});
                 }
-                return prev;
-            });
-            if (msg.sender._id !== selectedUser?._id) {
+            } else {
+                // Increment unread count for the sender
                 setUnread((prev) => ({
                     ...prev,
-                    [msg.sender._id]: (prev[msg.sender._id] || 0) + 1,
+                    [senderId]: (prev[senderId] || 0) + 1,
                 }));
             }
+
+            // Refresh contact list ordering
+            chatService.getUsers().then(setUsers).catch(console.error);
         };
+
         const handleMessageSent = (msg) => {
-            setMessages((prev) => [...prev, msg]);
+            const currentSelected = selectedUserRef.current;
+            const receiverId = msg.receiver?._id || msg.receiver;
+
+            if (receiverId?.toString() === currentSelected?._id?.toString()) {
+                setMessages((prev) => {
+                    // Replace temporary optimistic message with confirmed server message
+                    const filtered = prev.filter(m => !m._isPending || m.text !== msg.text);
+                    if (filtered.some(m => m._id && m._id === msg._id)) return filtered;
+                    return [...filtered, msg];
+                });
+            }
         };
-        const handleTyping = (userId) => setTyping(userId);
-        const handleStopTyping = () => setTyping(null);
+
+        const handleTyping = (userId) => {
+            if (userId?.toString() === selectedUserRef.current?._id?.toString()) {
+                setTyping(userId);
+            }
+        };
+
+        const handleStopTyping = () => {
+            setTyping(null);
+        };
+
+        const handleMessageError = (err) => {
+            console.error('Socket message error:', err);
+        };
 
         socket.on('new-message', handleNewMessage);
         socket.on('message-sent', handleMessageSent);
         socket.on('user-typing', handleTyping);
         socket.on('user-stop-typing', handleStopTyping);
-
-        // Fetch contacts
-        chatService.getUsers().then(setUsers).catch(console.error);
-        chatService.getUnreadCounts().then(setUnread).catch(console.error);
+        socket.on('message-error', handleMessageError);
 
         return () => {
             socket.off('new-message', handleNewMessage);
             socket.off('message-sent', handleMessageSent);
             socket.off('user-typing', handleTyping);
             socket.off('user-stop-typing', handleStopTyping);
+            socket.off('message-error', handleMessageError);
         };
-    }, [isOpen, socket, selectedUser?._id]);
+    }, [socket]);
 
     // Load messages when user is selected
     const selectUser = async (u) => {
+        if (!u) return;
         setSelectedUser(u);
         setLoading(true);
         setMessages([]);
         setTyping(null);
         try {
             const msgs = await chatService.getMessages(u._id);
-            setMessages(msgs);
+            setMessages(msgs || []);
             setUnread((prev) => {
                 const next = { ...prev };
                 delete next[u._id];
@@ -101,18 +152,34 @@ function Chat() {
             });
         } catch (err) {
             console.error('Failed to load messages:', err);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const sendMessage = () => {
-        if (!input.trim() || !selectedUser || !socket) return;
+        const text = input.trim();
+        if (!text || !selectedUser || !socket) return;
+
+        // Optimistic UI update: instantly show message
+        const optimisticMsg = {
+            _id: `temp-${Date.now()}`,
+            text,
+            sender: user,
+            receiver: selectedUser,
+            createdAt: new Date().toISOString(),
+            _isPending: true,
+        };
+
+        setMessages((prev) => [...prev, optimisticMsg]);
+        setInput('');
+
         socket.emit('send-message', {
             receiverId: selectedUser._id,
-            text: input.trim(),
+            text,
         });
+
         socket.emit('stop-typing', selectedUser._id);
-        setInput('');
     };
 
     const handleInputChange = (e) => {
@@ -126,13 +193,25 @@ function Chat() {
         }, 1500);
     };
 
+    // Open search overlay and load initial suggestions
+    const openSearch = async () => {
+        setIsSearchOpen(true);
+        setSearchQuery('');
+        setIsSearching(true);
+        try {
+            const results = await chatService.searchUsers('');
+            setSearchResults(results || []);
+        } catch (err) {
+            console.error('Initial user search error:', err);
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
     const handleSearch = async (e) => {
         const query = e.target.value;
         setSearchQuery(query);
-        if (query.length < 2) {
-            setSearchResults([]);
-            return;
-        }
 
         setIsSearching(true);
         try {
@@ -150,9 +229,8 @@ function Chat() {
         try {
             const addedUser = await chatService.addContact(u._id);
             setUsers((prev) => {
-                // Avoid duplicates in state
-                if (prev.some(user => user._id === addedUser._id)) return prev;
-                return [...prev, addedUser];
+                if (prev.some(usr => usr._id === addedUser._id)) return prev;
+                return [addedUser, ...prev];
             });
             setIsSearchOpen(false);
             setSearchQuery('');
@@ -165,7 +243,7 @@ function Chat() {
 
     const startVideoCall = () => {
         if (!selectedUser || !socket) return;
-        const meetingId = `chat-${Date.now()}-${user._id.slice(-4)}`;
+        const meetingId = `chat-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
 
         // Open Video Call window with meetingId
         openwindow('videocall', { meetingId, autoJoin: true });
@@ -177,18 +255,33 @@ function Chat() {
             meetingId
         });
 
-        // Optional chat message
+        // Add informative chat notification
+        const inviteText = `📞 I started a Video Call. Join meeting: ${meetingId}`;
+        const optimisticMsg = {
+            _id: `temp-${Date.now()}`,
+            text: inviteText,
+            sender: user,
+            receiver: selectedUser,
+            createdAt: new Date().toISOString(),
+            _isPending: true,
+        };
+        setMessages((prev) => [...prev, optimisticMsg]);
+
         socket.emit('send-message', {
             receiverId: selectedUser._id,
-            text: `📞 I'm starting a video call. Join at meeting ID: ${meetingId}`,
+            text: inviteText,
         });
     };
 
-    const isOnline = (userId) => onlineUsers.includes(userId);
+    const isOnline = (userId) => {
+        if (!userId) return false;
+        return onlineUsers.includes(userId.toString());
+    };
 
     const formatTime = (dateStr) => {
+        if (!dateStr) return '';
         const d = new Date(dateStr);
-        return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
     const getUserName = (u) => {
@@ -213,9 +306,9 @@ function Chat() {
     }
 
     return (
-        <div className="flex flex-col h-[550px] w-[750px] bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 font-sans shadow-xl">
+        <div className="flex flex-col h-[550px] w-[750px] bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 font-sans shadow-2xl">
             {/* Header */}
-            <div id="window-header" className="flex items-center px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shrink-0 relative">
+            <div id="window-header" className="flex items-center px-3 py-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 shrink-0 relative">
                 <div id="window-controls">
                     <WindowControls target="chat" />
                 </div>
@@ -224,57 +317,70 @@ function Chat() {
 
             <div className="flex flex-1 overflow-hidden relative">
                 {/* ── Contacts Sidebar ── */}
-                <div className="w-64 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gray-50/50 dark:bg-gray-800/50 shrink-0">
-                    <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Contacts</p>
+                <div className="w-64 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50/70 dark:bg-gray-900/60 shrink-0">
+                    <div className="p-3.5 border-b border-gray-200/60 dark:border-gray-800 flex items-center justify-between">
+                        <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Conversations</p>
                         <button
-                            onClick={() => setIsSearchOpen(true)}
-                            className="p-1 rounded-full hover:bg-gray-200 text-gray-500 transition-colors"
+                            onClick={openSearch}
+                            className="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-white transition-colors"
+                            title="New Conversation"
                         >
                             <Plus size={18} />
                         </button>
                     </div>
+
                     <div className="flex-1 overflow-y-auto">
                         {users.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center p-8 text-center text-gray-400 gap-2">
-                                <MessageSquare size={24} className="opacity-50" />
-                                <p className="text-xs">No contacts yet</p>
+                            <div className="flex flex-col items-center justify-center p-8 text-center text-gray-400 gap-2.5">
+                                <MessageSquare size={26} className="opacity-40" />
+                                <p className="text-xs font-medium">No contacts yet</p>
                                 <button
-                                    onClick={() => setIsSearchOpen(true)}
-                                    className="text-[10px] text-blue-500 font-semibold hover:underline"
+                                    onClick={openSearch}
+                                    className="text-xs text-blue-600 font-semibold hover:underline"
                                 >
-                                    Add someone
+                                    + Start a conversation
                                 </button>
                             </div>
                         ) : (
-                            users.map((u) => (
-                                <button
-                                    key={u._id}
-                                    onClick={() => selectUser(u)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all ${selectedUser?._id === u._id
-                                        ? 'bg-blue-50 dark:bg-blue-900/20 border-r-4 border-blue-500'
-                                        : 'hover:bg-gray-100 dark:hover:bg-gray-700 border-r-4 border-transparent'
+                            users.map((u) => {
+                                const online = isOnline(u._id);
+                                const isSelected = selectedUser?._id === u._id;
+                                const unreadCount = unread[u._id] || 0;
+
+                                return (
+                                    <button
+                                        key={u._id}
+                                        onClick={() => selectUser(u)}
+                                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-left transition-all ${
+                                            isSelected
+                                                ? 'bg-blue-50 dark:bg-blue-900/30 border-r-4 border-blue-500'
+                                                : 'hover:bg-gray-100 dark:hover:bg-gray-800/50 border-r-4 border-transparent'
                                         }`}
-                                >
-                                    <div className="relative shrink-0">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shadow-sm">
-                                            {(u.displayName || u.fullName || u.email || '?').charAt(0).toUpperCase()}
+                                    >
+                                        <div className="relative shrink-0">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                                                {(u.displayName || u.fullName || u.email || '?').charAt(0).toUpperCase()}
+                                            </div>
+                                            <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 ${online ? 'bg-green-500' : 'bg-gray-400'}`} />
                                         </div>
-                                        <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${isOnline(u._id) ? 'bg-green-400' : 'bg-gray-300'}`} />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{u.displayName || u.fullName || u.email}</p>
-                                        <p className={`text-[10px] ${isOnline(u._id) ? 'text-green-500' : 'text-gray-400'}`}>
-                                            {isOnline(u._id) ? 'Active now' : 'offline'}
-                                        </p>
-                                    </div>
-                                    {unread[u._id] > 0 && (
-                                        <span className="bg-blue-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                                            {unread[u._id]}
-                                        </span>
-                                    )}
-                                </button>
-                            ))
+
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
+                                                {u.displayName || u.fullName || u.email}
+                                            </p>
+                                            <p className={`text-[10px] ${online ? 'text-green-500' : 'text-gray-400'}`}>
+                                                {online ? 'Active now' : 'Offline'}
+                                            </p>
+                                        </div>
+
+                                        {unreadCount > 0 && (
+                                            <span className="bg-blue-600 text-white text-[10px] min-w-5 h-5 px-1.5 rounded-full flex items-center justify-center font-bold shadow-sm">
+                                                {unreadCount}
+                                            </span>
+                                        )}
+                                    </button>
+                                );
+                            })
                         )}
                     </div>
                 </div>
@@ -282,80 +388,89 @@ function Chat() {
                 {/* ── Message Area ── */}
                 <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
                     {!selectedUser ? (
-                        <div className="flex-1 flex flex-col items-center justify-center gap-4 text-gray-400 p-10 text-center">
-                            <div className="w-16 h-16 rounded-3xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
-                                <MessageSquare size={32} className="opacity-20" />
+                        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-gray-400 p-8 text-center">
+                            <div className="w-16 h-16 rounded-3xl bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center text-gray-400">
+                                <MessageSquare size={32} className="opacity-40" />
                             </div>
                             <div>
-                                <h3 className="text-gray-800 dark:text-gray-200 font-semibold">Your Messages</h3>
-                                <p className="text-sm mt-1">Select a contact to start talking</p>
+                                <h3 className="text-gray-800 dark:text-gray-200 font-semibold text-sm">Your Messages</h3>
+                                <p className="text-xs text-gray-400 mt-1">Select a contact or start a new chat</p>
                             </div>
                         </div>
                     ) : (
                         <>
                             {/* Chat Header */}
-                            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10">
-                                <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-150 dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm sticky top-0 z-10">
+                                <div className="flex items-center gap-3">
                                     <div className="relative">
                                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
                                             {(selectedUser.displayName || selectedUser.fullName || selectedUser.email || '?').charAt(0).toUpperCase()}
                                         </div>
-                                        <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${isOnline(selectedUser._id) ? 'bg-green-400' : 'bg-gray-300'}`} />
+                                        <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 ${isOnline(selectedUser._id) ? 'bg-green-500' : 'bg-gray-400'}`} />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{selectedUser.displayName || selectedUser.fullName || selectedUser.email}</p>
-                                        <p className="text-[10px] text-gray-400 font-medium">
+                                        <p className="text-xs font-bold text-gray-800 dark:text-gray-100">
+                                            {selectedUser.displayName || selectedUser.fullName || selectedUser.email}
+                                        </p>
+                                        <p className="text-[10px] text-gray-400">
                                             {typing === selectedUser._id ? (
-                                                <span className="text-blue-500 animate-pulse">is typing...</span>
-                                            ) : isOnline(selectedUser._id) ? 'Online' : 'Offline'}
+                                                <span className="text-blue-500 font-semibold animate-pulse">typing...</span>
+                                            ) : isOnline(selectedUser._id) ? 'Active now' : 'Offline'}
                                         </p>
                                     </div>
                                 </div>
+
                                 <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1 mr-4 px-2 py-1 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold border border-green-100">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                        HD Enabled
-                                    </div>
                                     <button
                                         onClick={startVideoCall}
-                                        className="p-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-all group shadow-sm hover:shadow-md active:scale-95 flex items-center gap-2 px-4 py-1.5"
-                                        title="Start Video Call"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm hover:shadow active:scale-95 transition-all"
+                                        title="Start Video Call with this contact"
                                     >
-                                        <Video size={16} fill="currentColor" />
-                                        <span className="text-[11px] font-black uppercase tracking-widest">Call</span>
+                                        <Video size={14} />
+                                        <span>Video Call</span>
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Messages */}
-                            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-200">
+                            {/* Message Bubble Feed */}
+                            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
                                 {loading ? (
                                     <div className="flex justify-center items-center h-full">
-                                        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                                     </div>
                                 ) : messages.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center mt-20 opacity-30">
-                                        <p className="text-sm">No messages yet. Send a greeting!</p>
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-60">
+                                        <p className="text-xs">No messages yet. Send a greeting!</p>
                                     </div>
                                 ) : (
                                     messages.map((msg, i) => {
-                                        const isMine = (msg.sender._id || msg.sender) === user._id;
+                                        const senderId = msg.sender?._id || msg.sender;
+                                        const isMine = senderId === user._id;
+
                                         return (
                                             <div key={msg._id || i} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                                                <div className="flex flex-col gap-1 max-w-[75%]">
+                                                <div className="flex flex-col gap-0.5 max-w-[75%]">
                                                     {!isMine && (
-                                                        <span className="text-[10px] font-bold text-gray-400 px-2 uppercase tracking-tight">
+                                                        <span className="text-[10px] font-semibold text-gray-400 px-1">
                                                             {getUserName(msg.sender)}
                                                         </span>
                                                     )}
-                                                    <div className={`group relative px-4 py-2.5 rounded-2xl text-[13px] shadow-sm leading-relaxed ${isMine
-                                                        ? 'bg-blue-600 text-white rounded-br-none'
-                                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none'
-                                                        }`}>
-                                                        <p className="break-words">{msg.text}</p>
-                                                        <p className={`text-[9px] mt-1 opacity-70 flex items-center gap-1 ${isMine ? 'justify-end' : ''}`}>
-                                                            {formatTime(msg.createdAt)}
-                                                        </p>
+                                                    <div className={`px-3.5 py-2 rounded-2xl text-xs leading-relaxed shadow-sm ${
+                                                        isMine
+                                                            ? 'bg-blue-600 text-white rounded-br-none'
+                                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-none'
+                                                    } ${msg._isPending ? 'opacity-70' : ''}`}>
+                                                        <p className="break-words select-text">{msg.text}</p>
+                                                        <div className={`flex items-center gap-1 text-[9px] mt-1 ${isMine ? 'justify-end text-blue-100' : 'text-gray-400'}`}>
+                                                            <span>{formatTime(msg.createdAt)}</span>
+                                                            {isMine && (
+                                                                msg._isPending ? (
+                                                                    <span className="opacity-70">…</span>
+                                                                ) : (
+                                                                    <Check size={11} className="opacity-90" />
+                                                                )
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -366,22 +481,22 @@ function Chat() {
                             </div>
 
                             {/* Input Bar */}
-                            <div className="px-6 py-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 shrink-0">
-                                <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-2xl px-4 py-2 border border-transparent focus-within:border-blue-200 dark:focus-within:border-blue-500/50 focus-within:bg-white dark:focus-within:bg-gray-900 transition-all shadow-inner">
+                            <div className="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-150 dark:border-gray-800 shrink-0">
+                                <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-1.5 border border-gray-200 dark:border-gray-700 focus-within:border-blue-500 transition-all">
                                     <input
                                         type="text"
                                         value={input}
                                         onChange={handleInputChange}
                                         onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                                        placeholder={`Message ${selectedUser.displayName || selectedUser.fullName || selectedUser.email}...`}
-                                        className="flex-1 py-1.5 bg-transparent text-sm outline-none text-gray-700 dark:text-gray-200"
+                                        placeholder={`Message ${selectedUser.displayName || selectedUser.fullName}...`}
+                                        className="flex-1 bg-transparent text-xs outline-none text-gray-800 dark:text-gray-100"
                                     />
                                     <button
                                         onClick={sendMessage}
                                         disabled={!input.trim()}
-                                        className="p-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white transition-all shadow-sm active:scale-95"
+                                        className="p-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white transition-all shadow-sm active:scale-95"
                                     >
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                                             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                                         </svg>
                                     </button>
@@ -391,52 +506,66 @@ function Chat() {
                     )}
                 </div>
 
-                {/* ── Search Contacts Overlay ── */}
+                {/* ── Search Contacts Modal ── */}
                 {isSearchOpen && (
-                    <div className="absolute inset-0 z-[100] bg-black/5 dark:bg-black/40 flex items-start justify-center pt-10 backdrop-blur-[2px]">
-                        <div className="w-[80%] max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
-                            <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
-                                <Search className="text-gray-400" size={18} />
+                    <div className="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-8">
+                        <div className="w-[85%] max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col animate-in zoom-in duration-200">
+                            <div className="p-3.5 border-b border-gray-150 dark:border-gray-700 flex items-center gap-2.5">
+                                <Search className="text-gray-400" size={16} />
                                 <input
                                     autoFocus
                                     type="text"
-                                    placeholder="Search people by name or email..."
+                                    placeholder="Search by name or email..."
                                     value={searchQuery}
                                     onChange={handleSearch}
-                                    className="flex-1 outline-none text-sm text-gray-700 dark:text-gray-200 bg-transparent"
+                                    className="flex-1 outline-none text-xs text-gray-800 dark:text-gray-100 bg-transparent"
                                 />
-                                <button onClick={() => { setIsSearchOpen(false); setSearchResults([]); setSearchQuery(''); }} className="text-gray-400 hover:text-gray-600">
-                                    <X size={18} />
+                                <button
+                                    onClick={() => {
+                                        setIsSearchOpen(false);
+                                        setSearchResults([]);
+                                        setSearchQuery('');
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                >
+                                    <X size={16} />
                                 </button>
                             </div>
 
-                            <div className="flex-1 max-h-[300px] overflow-y-auto">
+                            <div className="flex-1 max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-750">
                                 {isSearching ? (
-                                    <div className="p-8 flex justify-center"><div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>
+                                    <div className="p-6 flex justify-center">
+                                        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
                                 ) : searchResults.length === 0 ? (
-                                    searchQuery.length >= 2 ? (
-                                        <p className="p-8 text-center text-xs text-gray-400 italic">No users found matching "{searchQuery}"</p>
-                                    ) : (
-                                        <p className="p-8 text-center text-xs text-gray-400 italic">Start typing to find people...</p>
-                                    )
+                                    <p className="p-6 text-center text-xs text-gray-400">
+                                        No new users found
+                                    </p>
                                 ) : (
                                     <div className="p-2 space-y-1">
+                                        <p className="px-2 pt-1 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                            {searchQuery ? 'Search Results' : 'Suggestions'}
+                                        </p>
                                         {searchResults.map((u) => (
                                             <button
                                                 key={u._id}
                                                 onClick={() => addContact(u)}
-                                                className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left group"
+                                                className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors text-left group"
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 text-xs font-bold">
-                                                        {(u.displayName || u.fullName || u.email || '?').charAt(0).toUpperCase()}
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center text-xs font-bold">
+                                                        {(u.displayName || u.fullName || '?').charAt(0).toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{u.displayName || u.fullName || u.email}</p>
+                                                        <p className="text-xs font-semibold text-gray-800 dark:text-gray-100">
+                                                            {u.displayName || u.fullName}
+                                                        </p>
                                                         <p className="text-[10px] text-gray-400">{u.email}</p>
                                                     </div>
                                                 </div>
-                                                <UserPlus size={16} className="text-gray-300 group-hover:text-blue-500 transition-colors" />
+                                                <span className="text-xs text-blue-600 font-semibold flex items-center gap-1 group-hover:underline">
+                                                    <UserPlus size={14} /> Add
+                                                </span>
                                             </button>
                                         ))}
                                     </div>

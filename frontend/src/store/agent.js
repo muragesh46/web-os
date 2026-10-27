@@ -554,12 +554,12 @@ const useAgentStore = create(
                         return directReply;
                     }
 
-                    const errMsg = error.response?.data?.hint
+                    const finalErrMsg = error.response?.data?.hint
                         ? `${error.response.data.error}. ${error.response.data.hint}`
                         : error.response?.data?.error || (error.message?.includes('Network Error') ? "Can't reach the backend." : `Error: ${error.message}`);
                     set(state => ({
-                        response: errMsg, isProcessing: false, error: errMsg,
-                        conversationHistory: [...state.conversationHistory, { role: 'agent', content: errMsg, timestamp: new Date(), isError: true }],
+                        response: finalErrMsg, isProcessing: false, error: finalErrMsg,
+                        conversationHistory: [...state.conversationHistory, { role: 'agent', content: finalErrMsg, timestamp: new Date(), isError: true }],
                     }));
                 }
             },
