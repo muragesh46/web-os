@@ -209,16 +209,15 @@ function SettingsPanel({ store, onClose }) {
                         placeholder="AIzaSy…"
                     />
                     <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                        <button
-                            type="button"
+                        <a
+                            href="https://aistudio.google.com/app/apikey"
+                            target="_blank"
+                            rel="noreferrer"
                             className="mai-settings-btn mai-settings-btn-sm"
-                            onClick={() => {
-                                setGeminiKey('AIzaSyBleqWtfAQ6gGlKhP8rNFcOR2jxDrQrbQo');
-                                store.setGeminiApiKey('AIzaSyBleqWtfAQ6gGlKhP8rNFcOR2jxDrQrbQo');
-                            }}
+                            style={{ textDecoration: 'none' }}
                         >
-                            Use Free Default Key
-                        </button>
+                            Get a free key at AI Studio →
+                        </a>
                     </div>
                 </div>
                 {/* Quota */}

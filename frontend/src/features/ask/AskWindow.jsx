@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import '@style/ask.css';
 
-const DEFAULT_DEMO_KEY = 'AIzaSyBleqWtfAQ6gGlKhP8rNFcOR2jxDrQrbQo';
+
 
 const SUGGESTIONS = [
     "Explain quantum computing in simple terms",
@@ -87,11 +87,7 @@ const Ask = () => {
         );
     };
 
-    // Use default demo key
-    const handleUseDemoKey = () => {
-        setKeyInput(DEFAULT_DEMO_KEY);
-        handleSaveKey(DEFAULT_DEMO_KEY);
-    };
+
 
     // Send chat prompt
     const handleSend = async (textToSend) => {
@@ -226,13 +222,7 @@ const Ask = () => {
                             Save & Start Chatting
                         </button>
 
-                        <button
-                            type="button"
-                            className="ask-btn-secondary"
-                            onClick={handleUseDemoKey}
-                        >
-                            <Sparkles size={14} /> Use Free Default Key
-                        </button>
+
 
                         <div>
                             <a
