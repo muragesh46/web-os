@@ -9,7 +9,7 @@ const Conversation = require('./conversation.model');
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const DEFAULT_MODEL = process.env.OLLAMA_MODEL || 'qwen2.5:3b';
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 const MAX_HISTORY_MESSAGES = 30; // sliding context window
 
 // ── Tool definitions ─────────────────────────────────────────────────────────
@@ -406,8 +406,8 @@ async function geminiRequest(systemPrompt, messages, userApiKey = null) {
 
     const candidateModels = [
         process.env.GEMINI_MODEL,
+        'gemini-3.8-flash',
         'gemini-1.5-flash',
-        'gemini-2.0-flash',
     ].filter(Boolean);
 
     let lastError = null;
@@ -457,8 +457,8 @@ async function geminiStream(systemPrompt, messages, onChunk, userApiKey = null) 
 
     const candidateModels = [
         process.env.GEMINI_MODEL,
+        'gemini-3.8-flash',
         'gemini-1.5-flash',
-        'gemini-2.0-flash',
     ].filter(Boolean);
 
     let lastError = null;
@@ -755,12 +755,12 @@ async function clearSession(sessionId, userId = null) {
 
 // ── List available models from Ollama / Gemini ────────────────────────────────
 async function listModels() {
-    return ['gemini-1.5-flash', 'gemini-2.0-flash'];
+    return ['gemini-3.8-flash', 'gemini-1.5-flash'];
 }
 
 // ── Health check ────────────────────────────────────────────────────────────
 async function checkHealth() {
-    return { status: 'ok', provider: 'Gemini (Cloud)', model: 'gemini-1.5-flash' };
+    return { status: 'ok', provider: 'Gemini (Cloud)', model: 'gemini-3.8-flash' };
 }
 
 module.exports = { chat, streamChat, simpleChat, getHistory, clearSession, listModels, checkHealth, analyzeImage, getOllamaLoad, DEFAULT_MODEL };
