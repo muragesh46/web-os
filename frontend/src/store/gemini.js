@@ -22,7 +22,7 @@ export async function directGeminiGenerate(prompt, apiKey) {
     const key = apiKey || localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
     if (!key) throw new Error("Please enter your Gemini API key to activate AI.");
 
-    const candidateModels = ['gemini-2.5-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+    const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash'];
     let lastError = null;
 
     for (const model of candidateModels) {
@@ -41,9 +41,16 @@ export async function directGeminiGenerate(prompt, apiKey) {
                 if (reply) return reply;
             } else {
                 const errData = await res.json().catch(() => ({}));
-                lastError = new Error(errData.error?.message || `Gemini API error: ${res.status}`);
+                const errMsg = errData.error?.message || `Gemini API error: ${res.status}`;
+                if (res.status === 429 || errMsg.includes('quota') || errMsg.includes('rate limit') || errMsg.includes('leaked')) {
+                    throw new Error(errMsg);
+                }
+                lastError = new Error(errMsg);
             }
         } catch (err) {
+            if (err.message && (err.message.includes('quota') || err.message.includes('rate limit') || err.message.includes('leaked'))) {
+                throw err;
+            }
             lastError = err;
         }
     }
@@ -70,10 +77,15 @@ export async function askGemini(prompt) {
 
         if (res.data?.response) return res.data.response;
     } catch (err) {
+        const errMsg = err.response?.data?.error || err.message || '';
+        // If backend returned a rate limit, quota exceeded, or leaked key error, fail fast - do NOT double-request directly
+        if (err.response?.status === 429 || errMsg.includes('rate limit') || errMsg.includes('quota') || errMsg.includes('leaked')) {
+            throw new Error(errMsg || "Gemini rate limit / quota exceeded. Please wait a moment.");
+        }
         console.warn("[Ask] Backend proxy failed, attempting direct Gemini:", err.message);
     }
 
-    // Direct Gemini fallback
+    // Direct Gemini fallback only if proxy failed due to network / offline backend
     return await directGeminiGenerate(text, key);
 }
 

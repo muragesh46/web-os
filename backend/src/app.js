@@ -17,6 +17,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 
 // Initialize WebSockets
@@ -66,7 +67,7 @@ app.use(sanitizeXss);
 // Rate Limiting Middleware
 const generalLimit = rateLimit({
   windowMs: 60 * 1000,
-  max: 100,
+  max: 120,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
@@ -78,12 +79,17 @@ const generalLimit = rateLimit({
 
 const agentLimit = rateLimit({
   windowMs: 60 * 1000,
-  max: 30,
+  max: 60,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'AI request rate limit exceeded. Please wait a moment.' },
+  skip: (req) => {
+    // Don't rate limit lightweight background pollers / read endpoints
+    const p = req.path;
+    return p === '/health' || p === '/models' || p === '/load' || p === '/reminders' || p.startsWith('/history') || p === '/sessions' || p === '/model-info';
+  },
   handler: (req, res) => {
-    logger.warn('AI rate limit exceeded', { ip: req.ip });
+    logger.warn('AI rate limit exceeded', { ip: req.ip, path: req.path });
     res.status(429).json({ error: 'AI request rate limit exceeded. Please wait a moment.' });
   },
 });

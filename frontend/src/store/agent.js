@@ -413,26 +413,34 @@ const useAgentStore = create(
                         }
                     }
                 } catch (err) {
-                    console.warn('[Agent] Stream failed, attempting direct Gemini fallback:', err.message);
-                    if (key) {
-                        try {
-                            const candidateModels = ['gemini-2.5-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
-                            for (const model of candidateModels) {
-                                const directRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        contents: [{ role: 'user', parts: [{ text }] }],
-                                    }),
-                                });
-                                if (directRes.ok) {
-                                    const data = await directRes.json();
-                                    fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                                    if (fullText) break;
+                    const errMsg = err.message || '';
+                    if (errMsg.includes('rate limit') || errMsg.includes('quota') || errMsg.includes('leaked')) {
+                        fullText = `AI error: ${errMsg}`;
+                    } else {
+                        console.warn('[Agent] Stream failed, attempting direct Gemini fallback:', err.message);
+                        if (key) {
+                            try {
+                                const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash'];
+                                for (const model of candidateModels) {
+                                    const directRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            contents: [{ role: 'user', parts: [{ text }] }],
+                                        }),
+                                    });
+                                    if (directRes.ok) {
+                                        const data = await directRes.json();
+                                        fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                                        if (fullText) break;
+                                    } else if (directRes.status === 429) {
+                                        fullText = 'AI error: Gemini rate limit / quota exceeded. Please wait a moment.';
+                                        break;
+                                    }
                                 }
+                            } catch (directErr) {
+                                fullText = `AI error: ${directErr.message}`;
                             }
-                        } catch (directErr) {
-                            fullText = `AI error: ${directErr.message}`;
                         }
                     }
                     if (!fullText) fullText = `AI error: ${err.message}. Please check your Gemini API key.`;
@@ -511,11 +519,12 @@ const useAgentStore = create(
                     if (get().ttsEnabled) speakText(aiResponse, get().selectedVoiceURI);
                     return aiResponse;
                 } catch (error) {
-                    console.warn('[Agent] Chat error, attempting direct Gemini fallback:', error.message);
+                    const errMsg = error.response?.data?.error || error.message || '';
                     let directReply = '';
-                    if (key) {
+                    if (!errMsg.includes('rate limit') && !errMsg.includes('quota') && !errMsg.includes('leaked') && key) {
+                        console.warn('[Agent] Chat error, attempting direct Gemini fallback:', error.message);
                         try {
-                            const candidateModels = ['gemini-2.5-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+                            const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash'];
                             for (const model of candidateModels) {
                                 const directRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
                                     method: 'POST',
@@ -528,6 +537,8 @@ const useAgentStore = create(
                                     const data = await directRes.json();
                                     directReply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
                                     if (directReply) break;
+                                } else if (directRes.status === 429) {
+                                    break;
                                 }
                             }
                         } catch {}

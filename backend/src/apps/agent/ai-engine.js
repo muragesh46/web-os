@@ -9,7 +9,7 @@ const Conversation = require('./conversation.model');
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const DEFAULT_MODEL = process.env.OLLAMA_MODEL || 'qwen2.5:3b';
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 const MAX_HISTORY_MESSAGES = 30; // sliding context window
 
 // ── Tool definitions ─────────────────────────────────────────────────────────
@@ -391,7 +391,7 @@ function trimHistory(messages) {
 
 // ── Gemini (Cloud) Helpers ───────────────────────────────────────────────────
 async function geminiRequest(systemPrompt, messages, userApiKey = null) {
-    const key = userApiKey || process.env.GEMINI_API_KEY;
+    const key = userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
     if (!key) throw new Error("GEMINI_API_KEY is missing. Please configure your Google Gemini API key.");
 
     const geminiMessages = messages.map(m => ({
@@ -406,9 +406,8 @@ async function geminiRequest(systemPrompt, messages, userApiKey = null) {
 
     const candidateModels = [
         process.env.GEMINI_MODEL,
-        'gemini-2.5-flash-lite',
-        'gemini-3.8-flash',
-        'gemini-flash-latest'
+        'gemini-1.5-flash',
+        'gemini-2.0-flash',
     ].filter(Boolean);
 
     let lastError = null;
@@ -426,9 +425,15 @@ async function geminiRequest(systemPrompt, messages, userApiKey = null) {
                 if (text) return text;
             } else {
                 const errText = await response.text();
+                if (response.status === 429) {
+                    throw new Error("Gemini rate limit or quota exceeded. Please wait a minute before making more requests.");
+                }
                 lastError = new Error(`Gemini Error (${modelName}): ${errText}`);
             }
         } catch (err) {
+            if (err.message && (err.message.includes("quota") || err.message.includes("rate limit") || err.message.includes("leaked"))) {
+                throw err;
+            }
             lastError = err;
         }
     }
@@ -437,7 +442,7 @@ async function geminiRequest(systemPrompt, messages, userApiKey = null) {
 }
 
 async function geminiStream(systemPrompt, messages, onChunk, userApiKey = null) {
-    const key = userApiKey || process.env.GEMINI_API_KEY;
+    const key = userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
     if (!key) throw new Error("GEMINI_API_KEY is missing. Please configure your Google Gemini API key.");
 
     const geminiMessages = messages.map(m => ({
@@ -452,11 +457,11 @@ async function geminiStream(systemPrompt, messages, onChunk, userApiKey = null) 
 
     const candidateModels = [
         process.env.GEMINI_MODEL,
-        'gemini-2.5-flash-lite',
-        'gemini-3.8-flash',
-        'gemini-flash-latest'
+        'gemini-1.5-flash',
+        'gemini-2.0-flash',
     ].filter(Boolean);
 
+    let lastError = null;
     for (const modelName of candidateModels) {
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:streamGenerateContent?key=${key}&alt=sse`, {
@@ -465,7 +470,12 @@ async function geminiStream(systemPrompt, messages, onChunk, userApiKey = null) 
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) continue;
+            if (!response.ok) {
+                if (response.status === 429) {
+                    throw new Error("Gemini rate limit or quota exceeded. Please wait a minute before making more requests.");
+                }
+                continue;
+            }
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -497,7 +507,16 @@ async function geminiStream(systemPrompt, messages, onChunk, userApiKey = null) 
             }
 
             if (fullText) return fullText;
-        } catch { }
+        } catch (err) {
+            if (err.message && (err.message.includes("quota") || err.message.includes("rate limit") || err.message.includes("leaked"))) {
+                throw err;
+            }
+            lastError = err;
+        }
+    }
+
+    if (lastError?.message && (lastError.message.includes("quota") || lastError.message.includes("rate limit") || lastError.message.includes("leaked"))) {
+        throw lastError;
     }
 
     // Fallback to non-streaming if stream endpoint had issues
@@ -705,7 +724,7 @@ async function streamChat(sessionId, userMessage, context = {}, userId = null, m
 
 // ── Simple chat (no tools) ───────────────────────────────────────────────────
 async function simpleChat(sessionId, userMessage, userId = null, modelName = null, userApiKey = null) {
-    const key = userApiKey || process.env.GEMINI_API_KEY;
+    const key = userApiKey || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
     const systemPrompt = "You are Ask AI, an intelligent, fast, and helpful assistant for Web OS. Be direct, clear, and friendly.";
     const reply = await geminiRequest(systemPrompt, [{ role: 'user', content: userMessage }], key);
     if (userId) {
@@ -736,12 +755,12 @@ async function clearSession(sessionId, userId = null) {
 
 // ── List available models from Ollama / Gemini ────────────────────────────────
 async function listModels() {
-    return ['gemini-2.5-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+    return ['gemini-1.5-flash', 'gemini-2.0-flash'];
 }
 
 // ── Health check ────────────────────────────────────────────────────────────
 async function checkHealth() {
-    return { status: 'ok', provider: 'Gemini (Cloud)', model: 'gemini-2.5-flash-lite' };
+    return { status: 'ok', provider: 'Gemini (Cloud)', model: 'gemini-1.5-flash' };
 }
 
 module.exports = { chat, streamChat, simpleChat, getHistory, clearSession, listModels, checkHealth, analyzeImage, getOllamaLoad, DEFAULT_MODEL };
