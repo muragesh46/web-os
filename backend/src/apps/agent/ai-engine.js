@@ -405,10 +405,8 @@ async function geminiRequest(systemPrompt, messages, userApiKey = null) {
     };
 
     const candidateModels = [
-        process.env.GEMINI_MODEL,
-        'gemini-3.8-flash',
-        'gemini-1.5-flash',
-    ].filter(Boolean);
+        process.env.GEMINI_MODEL || 'gemini-3.8-flash'
+    ];
 
     let lastError = null;
     for (const modelName of candidateModels) {
@@ -456,10 +454,8 @@ async function geminiStream(systemPrompt, messages, onChunk, userApiKey = null) 
     };
 
     const candidateModels = [
-        process.env.GEMINI_MODEL,
-        'gemini-3.8-flash',
-        'gemini-1.5-flash',
-    ].filter(Boolean);
+        process.env.GEMINI_MODEL || 'gemini-3.8-flash'
+    ];
 
     let lastError = null;
     for (const modelName of candidateModels) {
@@ -755,7 +751,7 @@ async function clearSession(sessionId, userId = null) {
 
 // ── List available models from Ollama / Gemini ────────────────────────────────
 async function listModels() {
-    return ['gemini-3.8-flash', 'gemini-1.5-flash'];
+    return ['gemini-3.8-flash'];
 }
 
 // ── Health check ────────────────────────────────────────────────────────────

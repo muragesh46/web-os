@@ -22,7 +22,7 @@ export async function directGeminiGenerate(prompt, apiKey) {
     const key = apiKey || localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
     if (!key) throw new Error("Please enter your Gemini API key to activate AI.");
 
-    const candidateModels = ['gemini-3.8-flash', 'gemini-1.5-flash'];
+    const candidateModels = ['gemini-3.8-flash'];
     let lastError = null;
 
     for (const model of candidateModels) {
